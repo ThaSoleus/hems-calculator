@@ -75,7 +75,7 @@
   <h1 class="sr-only">Interactieve energiecalculator: zonnepanelen, thuisbatterij en elektrische auto</h1>
   <h1>Zonnepanelen, batterij &amp; EV — wat levert slimme sturing op?</h1>
   <p class="sub">Vul in wat je hebt of overweegt — je ziet meteen wat zonnepanelen, een thuisbatterij en slim laden je per jaar besparen, en hoe lang ze erover doen om zichzelf terug te verdienen.</p>
-  <p class="sub" style="font-size:12px;margin-top:-8px;color:var(--hint);">Indicatief, gekalibreerd op simulatie met werkelijke Tibber-prijzen 2025 en gemeten 2026. Rekent zonder saldering (uitleg in de begrippenlijst).</p>
+  <p class="sub" style="font-size:12px;margin-top:-8px;color:var(--hint);">Indicatief, gekalibreerd op simulatie met werkelijke Tibber-prijzen uit 2025 en 2026 (huidige prijzen). Rekent zonder saldering (uitleg in de begrippenlijst).</p>
   <div class="row" style="margin-bottom:10px;flex-wrap:wrap;gap:10px 18px;">
     <span><span style="font-size:13px;color:var(--muted);margin-right:8px;">Weergave</span>
       <span class="seg" id="viewmode"><button data-v="simpel" class="on">simpel</button><button data-v="uitgebreid">uitgebreid</button></span></span>
@@ -95,6 +95,29 @@
     <p style="font-size:12px;color:var(--hint);margin:8px 0 0;">De cijfers in deze calculator zijn gebaseerd op een zelf gebouwd, geïntegreerd systeem.</p>
   </details>
 
+  <details class="gloss">
+    <summary>Wat betekenen deze termen? — uitleg in gewone taal</summary>
+    <dl>
+      <dt>Zelfvoorziening</dt><dd>Het deel van je verbruik dat je uit je eigen zon dekt. Hoger = minder van het net nodig.</dd>
+      <dt>Zelfconsumptie</dt><dd>Het deel van je opgewekte zonne-energie dat je zélf gebruikt (i.p.v. terugleveren). Hoger = minder overschot weggegeven.</dd>
+      <dt>Dynamisch tarief</dt><dd>Stroomprijs verandert per uur (bv. Tibber): 's nachts/overdag vaak goedkoop, avondpiek duur, soms negatief.</dd>
+      <dt>Vast tarief</dt><dd>Eén vaste prijs per kWh, het hele jaar. Zonder saldering levert teruglevering meestal €0 op.</dd>
+      <dt>Saldering (en waarom dit telt)</dt><dd>Tot nu mocht je teruggeleverde stroom wegstrepen tegen wat je afneemt — saldering. Teruglevering was dan net zoveel waard als afname. Die regeling wordt afgebouwd: vanaf <b>2027</b> levert teruggeleverde stroom bijna niets meer op. Dáárom loont het om je zon zélf te gebruiken of op te slaan in plaats van terug te leveren — precies wat een batterij + slim sturen doen. Deze calculator rekent daarom <b>zonder saldering</b>.</dd>
+      <dt>Flexibele last</dt><dd>Apparaten die je kunt verschuiven naar zonuren (wasmachine, vaatwasser, droger) — dat verhoogt je zelfconsumptie.</dd>
+      <dt>Curtailment</dt><dd>Panelen tijdelijk terugregelen als teruglevering geld kóst (negatieve prijzen). Niet elke omvormer kan dit.</dd>
+      <dt>Predrain (buffer vrijmaken voor zon)</dt><dd><b>Predrain</b> = de batterij <b>vooraf bewust leegmaken</b> zodat er ruimte vrijkomt om je zonne-overschot op te slaan op momenten dat teruglevering juist geld kóst (negatieve prijzen). Zo vang je de zon op in de batterij in plaats van 'm tegen betaling het net op te duwen. Het doel is dus buffercapaciteit beschikbaar maken — niet handelen. (Los hiervan bestaat <b>dal→piek-arbitrage</b>: op goedkope uren laden en op dure uren ontladen, vooral 's winters relevant.)</dd>
+      <dt>Rendement / RTE (round-trip)</dt><dd>Bij een volledige laad-ontlaad-ronde verlies je energie. Marktgemiddelde (datasheet) is ~85%. Plug-in/all-in-one-units zitten soms lager (~80-85%); grotere systemen met een goede hybride-omvormer halen ~88-90% — dus niet per se lager. Dit verlies telt vooral bij <b>laden en ontladen op prijs</b> (arbitrage): laad je op een goedkoop uur om op een duur uur te ontladen, dan moet het prijsverschil groter zijn dan het verlies, anders lever je in.<br><b>Voorbeeld bij ~85%:</b> laad je 1 kWh à €0,10, dan moest je er ~1,18 kWh inkopen → de bruikbare kWh kost je ~€0,12. Het loont pas als je die later inzet op een uur dat <b>duurder is dan €0,12</b>. Is het dure uur €0,11, dan verlies je geld; is het €0,30, dan win je €0,18.<br>(Bij zonne-eigenverbruik draait het niet om prijsverschil maar om <b>batterij-volume</b>: groot genoeg om je avond/nacht-verbruik te dekken — zie "Gebalanceerde batterij".) Deze calculator rekent met ~85%.</dd>
+      <dt>Negatieve prijzen: betaal je of bespaar je?</dt><dd>Bij <b>afname</b> betaal je áltijd energiebelasting (~€0,092/kWh in 2026) + inkoopvergoeding + BTW, ook als de spotprijs negatief is. Pas als de spot onder ~<b>−€0,135/kWh</b> zakt (2026) word je <b>netto betaald om af te nemen</b>; daarboven betaal je nog steeds.<br>Bij <b>teruglevering</b> ligt het anders: daarover betaal je <b>géén energiebelasting</b> — die geldt alleen op afname. Je krijgt (of betaalt) alléén de <b>markt-(spot)prijs</b> van dat uur. Bij positieve prijzen krijg je dus ~de spotprijs; bij negatieve prijzen betaal je enkel dat (meestal kleine) negatieve bedrag. Daarom kost terugleveren bij licht-negatieve prijzen vaak maar een paar cent per kWh — en is de winst van curtailment/predrain navenant klein. (Onder saldering werd de belasting nog weggestreept; vanaf 2027 vervalt dat, maar teruglevering blijft onbelast.) <b>Let op:</b> sommige leveranciers rekenen daarnaast een kleine vergoeding-marge per kWh en/of vaste terugleverkosten per maand — dat verschilt per leverancier.<br>Het <b>doel</b> van slim sturen bij negatieve prijzen is dus niet verdienen, maar <b>besparen en het net ontlasten</b>: je voorkomt dat je betáált om terug te leveren en houdt energie lokaal. Iets verdienen is bijvangst, geen doel.</dd>
+      <dt>Slim absorberen (netvriendelijk)</dt><dd>Een slim systeem stuurt PV-overschot bij lage/negatieve prijzen bewust naar batterij + EV (laden afgestemd op prijs én zon), in plaats van het net op te duwen. Zo voorkom je dat je betáált om te exporteren, ontlast je het net (minder overschot = minder congestie) én houd je energie achter om juist op de dure piekuren terug te leveren. Een 'dom' systeem dumpt het overschot en mist dit.</dd>
+      <dt>Gebalanceerde batterij</dt><dd>De grootte waarbij je PV-overschot en avond/nacht-behoefte de batterij dagelijks net kunnen vullen en legen. Een grotere batterij helpt daarboven nauwelijks meer (vult/leegt dan zelden helemaal).</dd>
+      <dt>Waarom niet een grotere batterij?</dt><dd>Boven de gebalanceerde maat verdienen extra kWh zich nauwelijks terug. Een grotere accu vult/leegt zelden vol — in de zomer is je PV-overschot op, in de winter heb je te weinig dure-uren-last om te verschuiven (en terugleveren mag niet). Een extra kWh accu levert via winter dal→piek-arbitrage maar ~€1-7 per jaar op. Om diezelfde kWh terug te verdienen heb je ~€20-30 per jaar nodig — dat haal je dus niet. Uitzondering: een <b>warmtepomp-huis</b> (veel continue winterlast) of toenemende prijsvolatiliteit schuift die grens omhoog.</dd>
+      <dt>Ongestuurd vs slim EV-laden</dt><dd><b>Ongestuurd:</b> je plugt in bij thuiskomst (~17-19u) en de auto laadt meteen op vol vermogen — precies in de avondpiek (17-21u), de duurste uren. <b>Slim:</b> de lader verschuift naar de goedkoopste blokken: nacht-dal en/of middag-PV. Dat scheelt grofweg <b>15-45% van je laadkosten</b> (≈€100-200/jaar). Hoe meer je overdag thuis bent, hoe groter het % (meer bijna-gratis zon); rijd je veel/ben je weinig thuis, dan leunt de winst op nacht-vs-avond — kleiner %, omdat de energiebelasting (~€0,135/kWh) bij béíde wordt opgeteld en het relatieve verschil indrukt. Op volatiele winterdagen is het verschil groter dan dit gemiddelde.</dd>
+      <dt>Batterij gebruiken om de EV te laden?</dt><dd>Meestal niet lonend: goedkope nachtstroom of directe zon zijn vrijwel altijd voordeliger dan de batterij ontladen (~15% verlies) om de auto te laden — en de accu is 's avonds vaak al leeg door de huislast. Het loont alléén als de auto in <b>dure uren móét laden</b> (geen goedkoop nachtvenster) én de batterij nog gratis/goedkope (zon)energie over heeft mét ruimte: dan vermijd je de piekprijs minus het verlies. Een randgeval, geen kernreden voor een batterij; het wordt interessanter als nachtstroom duurder wordt.</dd>
+      <dt>Bruto vs netto capaciteit (batterij)</dt><dd>Bruto = de capaciteit die je koopt (staat op de doos/offerte). Netto = wat je er echt uit kunt halen, ≈ 90% daarvan — de rest blijft als beschermings-/reservemarge. Je betaalt voor bruto, maar gebruikt netto. Bv. 14,4 kWh bruto ≈ 13 kWh netto.</dd>
+      <dt>Omvormer</dt><dd>Zet gelijkstroom (panelen/batterij) om naar wisselstroom voor je huis. Het kW-vermogen bepaalt hoe snel je kunt laden/ontladen.</dd>
+    </dl>
+  </details>
+
   <div class="card">
     <div style="font-weight:600;font-size:15px;margin-bottom:4px;">1 · Wat heb je (of overweeg je)?</div>
     <p class="intro">Vink aan wat je hebt of overweegt. Alleen de bijbehorende invoervelden verschijnen hieronder. Tarief: dynamisch = uurprijs (bv. Tibber); vast = vaste prijs per kWh.</p>
@@ -110,16 +133,6 @@
         <span id="tariffNote" style="font-size:12px;color:var(--muted);margin-left:8px;"></span></div>
     </div>
     <p class="intro" style="margin-top:10px;"><b>Curtailment-omvormer</b> = een omvormer die je panelen tijdelijk kan terugregelen als terugleveren geld kost (negatieve prijzen). <b>Warmtepomp</b> = elektrische verwarming; verhoogt je winterverbruik en bepaalt mee welke batterijmaat zinvol is. Een slim systeem kan het verwarmen bovendien deels naar goedkope of zonnige uren verschuiven (voorverwarmen), zodat je minder in de dure avondpiek verbruikt.</p>
-  </div>
-
-  <div class="card" id="estCard" style="margin-top:14px;border-color:var(--accent);">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
-      <div>
-        <div style="font-weight:600;font-size:15px;margin-bottom:4px;">Batterij- &amp; omvormer-schatter</div>
-        <div id="estText" style="font-size:13px;color:var(--muted);line-height:1.6;"></div>
-      </div>
-      <button id="estApply" style="border:.5px solid var(--accent);background:var(--accent-bg);color:var(--accent);padding:8px 14px;border-radius:8px;font-size:14px;cursor:pointer;white-space:nowrap;">Toepassen ↓</button>
-    </div>
   </div>
 
   <div class="card" style="margin-top:14px;">
@@ -157,34 +170,22 @@
         <input type="range" id="dhome" min="0" max="7" step="1" value="2"></div>
       <div class="field"><label>Systeem in bedrijf (jaar)<br><span class="hint">voor "nog terug te verdienen"; 0 = nieuw/gepland</span></label>
         <input type="number" id="years" value="3" step="1" min="0"></div>
-      <div class="field"><label>Prijsstijging-scenario</label>
+      <div class="field"><label>Prijsstijging-scenario<br><span class="hint">schaalt de hele prijsvorm mee — ook de avondpiek én de negatieve prijzen worden dan groter</span></label>
         <div class="seg" id="pr"><button data-v="0" class="on">nu</button><button data-v="0.15">+15%</button><button data-v="0.30">+30%</button><button data-v="0.50">+50%</button></div></div>
     </div>
     <p style="font-size:12px;color:var(--hint);margin:10px 0 0;">Bruto batterij ≈ netto ÷ 0,9 (je koopt bruto, gebruikt netto). Velden verschijnen op basis van wat je hierboven aanvinkt.</p>
   </div>
 
-  <details class="gloss">
-    <summary>Wat betekenen deze termen? — uitleg in gewone taal</summary>
-    <dl>
-      <dt>Zelfvoorziening</dt><dd>Het deel van je verbruik dat je uit je eigen zon dekt. Hoger = minder van het net nodig.</dd>
-      <dt>Zelfconsumptie</dt><dd>Het deel van je opgewekte zonne-energie dat je zélf gebruikt (i.p.v. terugleveren). Hoger = minder overschot weggegeven.</dd>
-      <dt>Dynamisch tarief</dt><dd>Stroomprijs verandert per uur (bv. Tibber): 's nachts/overdag vaak goedkoop, avondpiek duur, soms negatief.</dd>
-      <dt>Vast tarief</dt><dd>Eén vaste prijs per kWh, het hele jaar. Zonder saldering levert teruglevering meestal €0 op.</dd>
-      <dt>Saldering (en waarom dit telt)</dt><dd>Tot nu mocht je teruggeleverde stroom wegstrepen tegen wat je afneemt — saldering. Teruglevering was dan net zoveel waard als afname. Die regeling wordt afgebouwd: vanaf <b>2027</b> levert teruggeleverde stroom bijna niets meer op. Dáárom loont het om je zon zélf te gebruiken of op te slaan in plaats van terug te leveren — precies wat een batterij + slim sturen doen. Deze calculator rekent daarom <b>zonder saldering</b>.</dd>
-      <dt>Flexibele last</dt><dd>Apparaten die je kunt verschuiven naar zonuren (wasmachine, vaatwasser, droger) — dat verhoogt je zelfconsumptie.</dd>
-      <dt>Curtailment</dt><dd>Panelen tijdelijk terugregelen als teruglevering geld kóst (negatieve prijzen). Niet elke omvormer kan dit.</dd>
-      <dt>Predrain (buffer vrijmaken voor zon)</dt><dd><b>Predrain</b> = de batterij <b>vooraf bewust leegmaken</b> zodat er ruimte vrijkomt om je zonne-overschot op te slaan op momenten dat teruglevering juist geld kóst (negatieve prijzen). Zo vang je de zon op in de batterij in plaats van 'm tegen betaling het net op te duwen. Het doel is dus buffercapaciteit beschikbaar maken — niet handelen. (Los hiervan bestaat <b>dal→piek-arbitrage</b>: op goedkope uren laden en op dure uren ontladen, vooral 's winters relevant.)</dd>
-      <dt>Rendement / RTE (round-trip)</dt><dd>Bij een volledige laad-ontlaad-ronde verlies je energie. Marktgemiddelde (datasheet) is ~85%. Plug-in/all-in-one-units zitten soms lager (~80-85%); grotere systemen met een goede hybride-omvormer halen ~88-90% — dus niet per se lager. Dit verlies telt vooral bij <b>laden en ontladen op prijs</b> (arbitrage): laad je op een goedkoop uur om op een duur uur te ontladen, dan moet het prijsverschil groter zijn dan het verlies, anders lever je in.<br><b>Voorbeeld bij ~85%:</b> laad je 1 kWh à €0,10, dan moest je er ~1,18 kWh inkopen → de bruikbare kWh kost je ~€0,12. Het loont pas als je die later inzet op een uur dat <b>duurder is dan €0,12</b>. Is het dure uur €0,11, dan verlies je geld; is het €0,30, dan win je €0,18.<br>(Bij zonne-eigenverbruik draait het niet om prijsverschil maar om <b>batterij-volume</b>: groot genoeg om je avond/nacht-verbruik te dekken — zie "Gebalanceerde batterij".) Deze calculator rekent met ~85%.</dd>
-      <dt>Negatieve prijzen: betaal je of bespaar je?</dt><dd>Bij <b>afname</b> betaal je áltijd energiebelasting (~€0,092/kWh in 2026) + inkoopvergoeding + BTW, ook als de spotprijs negatief is. Pas als de spot onder ~<b>−€0,135/kWh</b> zakt (2026) word je <b>netto betaald om af te nemen</b>; daarboven betaal je nog steeds.<br>Bij <b>teruglevering</b> ligt het anders: daarover betaal je <b>géén energiebelasting</b> — die geldt alleen op afname. Je krijgt (of betaalt) alléén de <b>markt-(spot)prijs</b> van dat uur. Bij positieve prijzen krijg je dus ~de spotprijs; bij negatieve prijzen betaal je enkel dat (meestal kleine) negatieve bedrag. Daarom kost terugleveren bij licht-negatieve prijzen vaak maar een paar cent per kWh — en is de winst van curtailment/predrain navenant klein. (Onder saldering werd de belasting nog weggestreept; vanaf 2027 vervalt dat, maar teruglevering blijft onbelast.) <b>Let op:</b> sommige leveranciers rekenen daarnaast een kleine vergoeding-marge per kWh en/of vaste terugleverkosten per maand — dat verschilt per leverancier.<br>Het <b>doel</b> van slim sturen bij negatieve prijzen is dus niet verdienen, maar <b>besparen en het net ontlasten</b>: je voorkomt dat je betáált om terug te leveren en houdt energie lokaal. Iets verdienen is bijvangst, geen doel.</dd>
-      <dt>Slim absorberen (netvriendelijk)</dt><dd>Een slim systeem stuurt PV-overschot bij lage/negatieve prijzen bewust naar batterij + EV (laden afgestemd op prijs én zon), in plaats van het net op te duwen. Zo voorkom je dat je betáált om te exporteren, ontlast je het net (minder overschot = minder congestie) én houd je energie achter om juist op de dure piekuren terug te leveren. Een 'dom' systeem dumpt het overschot en mist dit.</dd>
-      <dt>Gebalanceerde batterij</dt><dd>De grootte waarbij je PV-overschot en avond/nacht-behoefte de batterij dagelijks net kunnen vullen en legen. Een grotere batterij helpt daarboven nauwelijks meer (vult/leegt dan zelden helemaal).</dd>
-      <dt>Waarom niet een grotere batterij?</dt><dd>Boven de gebalanceerde maat verdienen extra kWh zich nauwelijks terug. Een grotere accu vult/leegt zelden vol — in de zomer is je PV-overschot op, in de winter heb je te weinig dure-uren-last om te verschuiven (en terugleveren mag niet). Een extra kWh accu levert via winter dal→piek-arbitrage maar ~€1-7 per jaar op. Om diezelfde kWh terug te verdienen heb je ~€20-30 per jaar nodig — dat haal je dus niet. Uitzondering: een <b>warmtepomp-huis</b> (veel continue winterlast) of toenemende prijsvolatiliteit schuift die grens omhoog.</dd>
-      <dt>Ongestuurd vs slim EV-laden</dt><dd><b>Ongestuurd:</b> je plugt in bij thuiskomst (~17-19u) en de auto laadt meteen op vol vermogen — precies in de avondpiek (17-21u), de duurste uren. <b>Slim:</b> de lader verschuift naar de goedkoopste blokken: nacht-dal en/of middag-PV. Dat scheelt grofweg <b>15-45% van je laadkosten</b> (≈€100-200/jaar). Hoe meer je overdag thuis bent, hoe groter het % (meer bijna-gratis zon); rijd je veel/ben je weinig thuis, dan leunt de winst op nacht-vs-avond — kleiner %, omdat de energiebelasting (~€0,135/kWh) bij béíde wordt opgeteld en het relatieve verschil indrukt. Op volatiele winterdagen is het verschil groter dan dit gemiddelde.</dd>
-      <dt>Batterij gebruiken om de EV te laden?</dt><dd>Meestal niet lonend: goedkope nachtstroom of directe zon zijn vrijwel altijd voordeliger dan de batterij ontladen (~15% verlies) om de auto te laden — en de accu is 's avonds vaak al leeg door de huislast. Het loont alléén als de auto in <b>dure uren móét laden</b> (geen goedkoop nachtvenster) én de batterij nog gratis/goedkope (zon)energie over heeft mét ruimte: dan vermijd je de piekprijs minus het verlies. Een randgeval, geen kernreden voor een batterij; het wordt interessanter als nachtstroom duurder wordt.</dd>
-      <dt>Bruto vs netto capaciteit (batterij)</dt><dd>Bruto = de capaciteit die je koopt (staat op de doos/offerte). Netto = wat je er echt uit kunt halen, ≈ 90% daarvan — de rest blijft als beschermings-/reservemarge. Je betaalt voor bruto, maar gebruikt netto. Bv. 14,4 kWh bruto ≈ 13 kWh netto.</dd>
-      <dt>Omvormer</dt><dd>Zet gelijkstroom (panelen/batterij) om naar wisselstroom voor je huis. Het kW-vermogen bepaalt hoe snel je kunt laden/ontladen.</dd>
-    </dl>
-  </details>
+  <div class="card" id="estCard" style="margin-top:14px;border-color:var(--accent);">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+      <div>
+        <div style="font-weight:600;font-size:15px;margin-bottom:4px;">Batterij- &amp; omvormer-schatter</div>
+        <div id="estText" style="font-size:13px;color:var(--muted);line-height:1.6;"></div>
+        <div style="font-size:12px;color:var(--hint);margin-top:6px;">Op basis van je gegevens hierboven. "Toepassen" vult de batterijmaat in het veld in.</div>
+      </div>
+      <button id="estApply" style="border:.5px solid var(--accent);background:var(--accent-bg);color:var(--accent);padding:8px 14px;border-radius:8px;font-size:14px;cursor:pointer;white-space:nowrap;">Toepassen ↑</button>
+    </div>
+  </div>
 
   <h2>Jaarlijkse energiekosten per configuratie</h2>
   <div class="grid cards" id="cards"></div>
@@ -198,7 +199,7 @@
   <div class="note" id="advice"></div>
 
   <p class="foot">
-    Model: representatieve dag per maand × 24u, gekalibreerd op zelfvoorziening 79% en vast-tarief-kosten uit de volledige 15-min simulatie (werkelijke Tibber-prijzen 2025 + gemeten 2026). Vast tarief: €0,28/kWh import, €0,00 teruglevering (na afbouw saldering). Dynamisch: gemeten 2026-spotvorm + €0,135 heffing import, spot −€0,02 export. "Slim sturen" = ontlaad-timing + predrain (DP-plafond; realistisch ~60-80% haalbaar met day-ahead sturing). Flexibele lasten (wasmachine, vaatwasser) verschuif je deels naar zonuren. <b>Onbalansmarkt-handel is bewust niet meegenomen</b>: dat verdienmodel laat de batterij hard mee-schakelen met netfrequentie-signalen en kan netcongestie juist <i>versterken</i> in plaats van oplossen — het tegenovergestelde van lokaal zelfverbruik + curtailment, die het net juist ontlasten. De gebalanceerde-batterij-suggestie is <b>de maat waarboven een grotere batterij nauwelijks nog helpt</b>: die je PV-overschot en avond/nacht-behoefte dagelijks net kan vullen/legen, niet payback-gedreven (terugverdientijd staat los in de tabel). Cijfers indicatief; absolute bedragen hangen af van lokale situatie en prijsontwikkeling.
+    Model: representatieve dag per maand × 24u, gekalibreerd op zelfvoorziening 79% en vast-tarief-kosten uit de volledige 15-min simulatie (werkelijke Tibber-prijzen uit 2025 en 2026). Vast tarief: €0,28/kWh import, €0,00 teruglevering (na afbouw saldering). Dynamisch: spotvorm uit 2025-2026 + €0,135 heffing import, spot −€0,02 export; negatieve prijzen marginaal gemodelleerd (huidige prijzen — diepte en frequentie kunnen in de toekomst veranderen). "Slim sturen" = ontlaad-timing + predrain (DP-plafond; realistisch ~60-80% haalbaar met day-ahead sturing). Flexibele lasten (wasmachine, vaatwasser) verschuif je deels naar zonuren. <b>Onbalansmarkt-handel is bewust niet meegenomen</b>: dat verdienmodel laat de batterij hard mee-schakelen met netfrequentie-signalen en kan netcongestie juist <i>versterken</i> in plaats van oplossen — het tegenovergestelde van lokaal zelfverbruik + curtailment, die het net juist ontlasten. De gebalanceerde-batterij-suggestie is <b>de maat waarboven een grotere batterij nauwelijks nog helpt</b>: die je PV-overschot en avond/nacht-behoefte dagelijks net kan vullen/legen, niet payback-gedreven (terugverdientijd staat los in de tabel). Cijfers indicatief; absolute bedragen hangen af van lokale situatie en prijsontwikkeling.
   </p>
 
   <div class="srcbox">
@@ -248,7 +249,7 @@ function simulate(o){
         const evl=evD*ev[h], pv=pvD*PVD[h], load=baseD*LD[h]+flexD*FLEX[h]+evl; evTot+=evl;
         pvTotal+=pv;
         let spot=SPOT[h]*pr;
-        if(summer&&h>=10&&h<=15) spot=(SPOT[h]-0.13*negI)*pr;
+        if(summer&&h>=10&&h<=15) spot=(SPOT[h]-0.08*negI)*pr;
         const isNeg=spot<=0;
         const direct=Math.min(pv,load)*DIRECT_MM; pvUsed+=direct;
         if(evl>0&&load>0) evPv+=direct*(evl/load);
@@ -293,7 +294,7 @@ function batArb(o){
   for(let m=0;m<12;m++){const su=(m>=3&&m<=8),negI=PVM[m]/Math.max(...PVM);
     const spots=[],loads=[];
     const flex=Math.min(o.flex||0,o.house),baseA=(o.house-flex)/365,flexA=flex/365;
-    for(let h=0;h<24;h++){let sp=SPOT[h]*pr;if(su&&h>=10&&h<=15)sp=(SPOT[h]-0.13*negI)*pr;spots.push(sp);loads.push(baseA*LD[h]+flexA*FLEX[h]+(evKwh/365)*ev[h]);}
+    for(let h=0;h<24;h++){let sp=SPOT[h]*pr;if(su&&h>=10&&h<=15)sp=(SPOT[h]-0.08*negI)*pr;spots.push(sp);loads.push(baseA*LD[h]+flexA*FLEX[h]+(evKwh/365)*ev[h]);}
     const exp=[...Array(24).keys()].sort((a,b)=>spots[b]-spots[a]);
     let delivered=0,dCost=0;const cap=battU*ARB_RT;
     for(const h of exp){if(delivered>=cap)break;const d=Math.min(loads[h],rate,cap-delivered);if(d>0){delivered+=d;dCost+=d*(spots[h]+LEVY);}}
