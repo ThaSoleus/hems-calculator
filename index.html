@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zonnepanelen, batterij en EV — wat levert het op?</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root{
+    --bg:#ffffff; --surface:#f6f5f1; --text:#1a1a18; --muted:#5f5e5a; --hint:#888780;
+    --border:rgba(0,0,0,.12); --accent:#185fa5; --accent-bg:#e6f1fb;
+    --good:#0f6e56; --good-bg:#e1f5ee; --warn:#854f0b; --warn-bg:#faeeda; --danger:#a32d2d;
+    --radius:12px; --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{--bg:#1f1e1c;--surface:#2a2926;--text:#ece9e2;--muted:#a8a69e;--hint:#888780;
+      --border:rgba(255,255,255,.15);--accent:#85b7eb;--accent-bg:#0c447c;
+      --good:#5dcaa5;--good-bg:#085041;--warn:#fac775;--warn-bg:#633806;--danger:#f09595;}
+  }
+  *{box-sizing:border-box}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);margin:0;line-height:1.6;
+    -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:28px 18px 56px;}
+  h1{font-size:22px;font-weight:600;margin:0 0 4px;}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 24px;}
+  h2{font-size:16px;font-weight:600;margin:28px 0 12px;}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);}
+  .card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
+  .grid{display:grid;gap:12px;}
+  .ctrls{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));}
+  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px;}
+  .field .hint{color:var(--hint);font-size:11px;}
+  details.gloss{margin:16px 0;font-size:13px;color:var(--muted);background:var(--accent-bg);
+    border:1px solid var(--accent);border-radius:var(--radius);padding:12px 16px;}
+  details.gloss summary{cursor:pointer;font-weight:600;color:var(--accent);list-style:none;
+    display:flex;align-items:center;gap:8px;}
+  details.gloss summary::-webkit-details-marker{display:none;}
+  details.gloss summary::before{content:"ⓘ";font-size:16px;}
+  details.gloss summary::after{content:"▾ klik om te openen";margin-left:auto;font-weight:400;font-size:12px;opacity:.8;}
+  details.gloss[open] summary::after{content:"▴ klik om te sluiten";}
+  details.gloss[open] summary{margin-bottom:8px;}
+  details.gloss dt{font-weight:600;color:var(--text);margin-top:8px;}
+  details.gloss dd{margin:2px 0 0;}
+  .intro{font-size:12px;color:var(--hint);margin:-4px 0 10px;}
+  .field input[type=number]{width:100%;height:36px;padding:0 10px;border:.5px solid var(--border);
+    border-radius:8px;background:var(--bg);color:var(--text);font-size:15px;}
+  .field input[type=range]{width:100%;}
+  .row{display:flex;align-items:center;gap:10px;}
+  .seg{display:inline-flex;border:.5px solid var(--border);border-radius:8px;overflow:hidden;}
+  .seg button{border:0;background:var(--bg);color:var(--text);padding:8px 14px;font-size:14px;cursor:pointer;}
+  .seg button.on{background:var(--accent-bg);color:var(--accent);font-weight:500;}
+  .toggle{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;}
+  .cards{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));}
+  .metric{background:var(--surface);border-radius:8px;padding:14px;}
+  .metric .lbl{font-size:12px;color:var(--muted);margin-bottom:6px;line-height:1.3;}
+  .metric .val{font-size:24px;font-weight:600;}
+  .metric .delta{font-size:12px;color:var(--good);margin-top:3px;}
+  .chartbox{position:relative;height:260px;margin:8px 0 4px;}
+  .note{font-size:13px;color:var(--muted);background:var(--surface);border-radius:8px;padding:12px 14px;margin-top:10px;}
+  .pill{display:inline-block;font-size:12px;padding:3px 9px;border-radius:7px;background:var(--accent-bg);color:var(--accent);}
+  .pill.warn{background:var(--warn-bg);color:var(--warn);}
+  .pill.good{background:var(--good-bg);color:var(--good);}
+  table.bd{width:100%;font-size:13px;border-collapse:collapse;margin-top:6px;}
+  table.bd td{padding:6px 0;border-bottom:.5px solid var(--border);}
+  table.bd td:last-child{text-align:right;font-weight:500;}
+  .foot{font-size:12px;color:var(--hint);margin-top:24px;line-height:1.6;}
+  .srcbox{font-size:13px;color:var(--muted);margin-top:16px;border-top:1px solid var(--border);padding-top:12px;line-height:1.7;}
+  .srcbox a{color:var(--accent);text-decoration:none;}
+  .srcbox a:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="sr-only">Interactieve energiecalculator: zonnepanelen, thuisbatterij en elektrische auto</h1>
+  <h1>Zonnepanelen, batterij &amp; EV — wat levert slimme sturing op?</h1>
+  <p class="sub">Vul je eigen situatie in. Indicatief, gekalibreerd op simulatie met werkelijke Tibber-prijzen 2025 en gemeten 2026. Zonder saldering.</p>
+  <div class="row" style="margin-bottom:10px;flex-wrap:wrap;gap:10px 18px;">
+    <span><span style="font-size:13px;color:var(--muted);margin-right:8px;">Weergave</span>
+      <span class="seg" id="viewmode"><button data-v="simpel" class="on">simpel</button><button data-v="uitgebreid">uitgebreid</button></span></span>
+    <span><span style="font-size:13px;color:var(--muted);margin-right:8px;">Slim HEMS</span>
+      <span class="seg" id="hems"><button data-v="aan" class="on">aan</button><button data-v="uit">uit</button></span></span>
+  </div>
+  <p style="font-size:12px;color:var(--hint);margin:-2px 0 14px;">Slim HEMS = een systeem dat EV-laden én batterij slim op prijs/zon aanstuurt. Zet 'm uit/aan om het verschil te zien. (Werkt alleen bij dynamisch tarief.)</p>
+
+  <div class="card">
+    <div style="font-weight:600;font-size:15px;margin-bottom:4px;">1 · Wat heb je (of overweeg je)?</div>
+    <p class="intro">Vink aan wat je hebt of overweegt. Alleen de bijbehorende invoervelden verschijnen hieronder. Tarief: dynamisch = uurprijs (bv. Tibber); vast = vaste prijs per kWh.</p>
+    <div class="row" style="flex-wrap:wrap;gap:14px 20px;">
+      <label class="toggle"><input type="checkbox" id="hasPV" checked> Zonnepanelen</label>
+      <label class="toggle"><input type="checkbox" id="hasBatt" checked> Thuisbatterij</label>
+      <label class="toggle"><input type="checkbox" id="hasEV" checked> Elektrische auto</label>
+      <label class="toggle"><input type="checkbox" id="induction" checked> Inductie koken</label>
+      <label class="toggle"><input type="checkbox" id="heatpump"> Warmtepomp (elektrische verwarming)</label>
+      <label class="toggle"><input type="checkbox" id="curtail"> Curtailment-omvormer</label>
+      <div><span style="font-size:13px;color:var(--muted);margin-right:8px;">Tarief</span>
+        <span class="seg" id="tariff"><button data-v="dyn" class="on">dynamisch</button><button data-v="fixed">vast</button></span>
+        <span id="tariffNote" style="font-size:12px;color:var(--muted);margin-left:8px;"></span></div>
+    </div>
+  </div>
+
+  <div class="card" id="estCard" style="margin-top:14px;border-color:var(--accent);">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+      <div>
+        <div style="font-weight:600;font-size:15px;margin-bottom:4px;">Batterij- &amp; omvormer-schatter</div>
+        <div id="estText" style="font-size:13px;color:var(--muted);line-height:1.6;"></div>
+      </div>
+      <button id="estApply" style="border:.5px solid var(--accent);background:var(--accent-bg);color:var(--accent);padding:8px 14px;border-radius:8px;font-size:14px;cursor:pointer;white-space:nowrap;">Toepassen ↓</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <div style="font-weight:600;font-size:15px;margin-bottom:10px;">2 · Vul je gegevens in</div>
+    <div class="grid ctrls">
+      <div class="field"><label>Totaal stroomverbruik (kWh/jaar)<br><span class="hint">zoals op je jaarnota/meter — auto-thuisladen mag erin zitten</span></label>
+        <input type="number" id="house" value="5100" step="100"></div>
+      <div class="field" data-need="ev"><label class="toggle" style="font-size:13px;color:var(--muted);"><input type="checkbox" id="inclcar" checked> Verbruik is incl. auto-thuisladen</label>
+        <span class="hint">aan: we schatten de auto eruit; uit: verbruik is exclusief auto</span></div>
+      <div class="field"><label>Flexibele last op zon/dal (kWh/jr)<br><span class="hint">wasmachine/vaatwasser/droger die je bewust overdag (op de zon) draait</span></label>
+        <input type="number" id="flex" value="400" step="50" min="0"></div>
+      <div class="field" data-need="fixed"><label>Vast tarief import (€/kWh)<br><span class="hint">prijs die je per kWh van het net betaalt</span></label>
+        <input type="number" id="fixedprice" value="0.28" step="0.01" min="0"></div>
+      <div class="field" data-need="pv"><label>Invoer panelen <span id="kwpOut" class="pill"></span></label>
+        <span class="seg" id="pvmode" style="width:100%;"><button data-v="count" class="on" style="flex:1;">aantal × Wp</button><button data-v="kwp" style="flex:1;">totaal kWp</button></span></div>
+      <div class="field" data-need="pv" data-pvmode="count"><label>Aantal panelen</label>
+        <input type="number" id="npanel" value="14" step="1" min="0"></div>
+      <div class="field" data-need="pv" data-pvmode="count"><label>Wp per paneel<br><span class="hint">staat op het paneel/de offerte (bv. 430)</span></label>
+        <input type="number" id="wppanel" value="430" step="5" min="0"></div>
+      <div class="field" data-need="pv" data-pvmode="kwp"><label>Totaal vermogen (kWp)<br><span class="hint">som van alle panelen ÷ 1000 (bv. 14×430 = 6,0 kWp)</span></label>
+        <input type="number" id="kwptotal" value="6" step="0.1" min="0"></div>
+      <div class="field" data-need="pv"><label>Panelen: nog te investeren / af te schrijven (€)<br><span class="hint">0 = al afgeschreven; of de geplande investering</span></label>
+        <input type="number" id="pvcost" value="6600" step="100"></div>
+      <div class="field" data-need="batt"><label>Batterij netto bruikbaar (kWh) <span id="npOut" class="pill"></span><br><span class="hint">wat je er echt uit haalt (≈ 90% van de bruto/gekochte capaciteit)</span></label>
+        <input type="number" id="batt" value="13" step="0.5"></div>
+      <div class="field" data-need="batt"><label>Batterij: nog te investeren / af te schrijven (€)<br><span class="hint">0 = al afgeschreven; of de geplande investering</span></label>
+        <input type="number" id="cost" value="4300" step="100"></div>
+      <div class="field" data-need="ev"><label>Elektrische auto (km/jaar)</label>
+        <input type="number" id="evkm" value="10000" step="1000"></div>
+      <div class="field" data-need="ev"><label>EV-verbruik (kWh/100 km, 0 = standaard 20)</label>
+        <input type="number" id="evcons" value="20" step="1" min="0"></div>
+      <div class="field" data-need="ev"><label>% thuis geladen <span id="hpOut" class="pill"></span><br><span class="hint">rest laad je op werk/publiek (Tesla-app toont dit)</span></label>
+        <input type="range" id="homepct" min="0" max="100" step="5" value="80"></div>
+      <div class="field" data-need="ev"><label>EV overdag thuis <span id="dhOut" class="pill"></span><br><span class="hint">dagen/week dat de auto overdag op de zon kan laden</span></label>
+        <input type="range" id="dhome" min="0" max="7" step="1" value="2"></div>
+      <div class="field"><label>Systeem in bedrijf (jaar)<br><span class="hint">voor "nog terug te verdienen"; 0 = nieuw/gepland</span></label>
+        <input type="number" id="years" value="3" step="1" min="0"></div>
+      <div class="field"><label>Prijsstijging-scenario</label>
+        <div class="seg" id="pr"><button data-v="0" class="on">nu</button><button data-v="0.15">+15%</button><button data-v="0.30">+30%</button><button data-v="0.50">+50%</button></div></div>
+    </div>
+    <p style="font-size:12px;color:var(--hint);margin:10px 0 0;">Bruto batterij ≈ netto ÷ 0,9 (je koopt bruto, gebruikt netto). Velden verschijnen op basis van wat je hierboven aanvinkt.</p>
+  </div>
+
+  <details class="gloss">
+    <summary>Wat betekenen deze termen? — uitleg in gewone taal</summary>
+    <dl>
+      <dt>Zelfvoorziening</dt><dd>Het deel van je verbruik dat je uit je eigen zon dekt. Hoger = minder van het net nodig.</dd>
+      <dt>Zelfconsumptie</dt><dd>Het deel van je opgewekte zonne-energie dat je zélf gebruikt (i.p.v. terugleveren). Hoger = minder overschot weggegeven.</dd>
+      <dt>Dynamisch tarief</dt><dd>Stroomprijs verandert per uur (bv. Tibber): 's nachts/overdag vaak goedkoop, avondpiek duur, soms negatief.</dd>
+      <dt>Vast tarief</dt><dd>Eén vaste prijs per kWh, het hele jaar. Zonder saldering levert teruglevering meestal €0 op.</dd>
+      <dt>Flexibele last</dt><dd>Apparaten die je kunt verschuiven naar zonuren (wasmachine, vaatwasser, droger) — dat verhoogt je zelfconsumptie.</dd>
+      <dt>Curtailment</dt><dd>Panelen tijdelijk terugregelen als teruglevering geld kóst (negatieve prijzen). Niet elke omvormer kan dit.</dd>
+      <dt>Predrain / dal→piek-arbitrage</dt><dd>De batterij vooraf legen of op goedkope uren laden, en ontladen op dure uren — slim met de prijs meebewegen.</dd>
+      <dt>Rendement / RTE (round-trip)</dt><dd>Bij een volledige laad-ontlaad-ronde verlies je energie. Marktgemiddelde (datasheet) ~85-90%; plug-in/all-in-one-units soms lager (~80-85%), grotere systemen met een goede hybride-omvormer ~88-90% (dus niet per se lager). Dit telt vooral bij <b>laden en ontladen op prijs</b> (arbitrage): laad je op een goedkoop uur om op een duur uur te ontladen, dan moet het prijsverschil groter zijn dan het verlies, anders lever je in.<br><b>Voorbeeld bij ~85%:</b> laad je 1 kWh à €0,10, dan moest je er ~1,18 kWh inkopen → de bruikbare kWh kost je ~€0,12. Het loont pas als je die later inzet op een uur dat <b>duurder is dan €0,12</b>. Is het dure uur €0,11, dan verlies je geld; is het €0,30, dan win je €0,18.<br>(Bij zonne-eigenverbruik draait het niet om prijsverschil maar om <b>batterij-volume</b>: groot genoeg om je avond/nacht-verbruik te dekken — zie "Gebalanceerde batterij".) Deze calculator rekent met ~85%.</dd>
+      <dt>Negatieve prijzen: krijg je betaald of betaal je?</dt><dd>Bij <b>afname</b> betaal je áltijd energiebelasting (~€0,092/kWh in 2026) + inkoopvergoeding + BTW, ook als de spotprijs negatief is. Je wordt pas <b>netto betaald om stroom af te nemen</b> als de spot onder ~<b>−€0,135/kWh</b> zakt (2026); daarboven betaal je nog steeds. Daarom loont grid-laden bij negatieve prijzen alleen écht onder die drempel. Bij <b>teruglevering</b> tijdens negatieve prijzen betaal je meestal — maar de exacte afrekening (inkoopvergoeding, BTW-op-negatief, eventuele terugleverkosten) verschilt per leverancier en is nog onzeker; de calculator hanteert hier een redelijke aanname, geen hard getal.</dd>
+      <dt>Slim absorberen (netvriendelijk)</dt><dd>Een slim systeem stuurt PV-overschot bij lage/negatieve prijzen bewust naar batterij + EV (laden afgestemd op prijs én zon), in plaats van het net op te duwen. Zo voorkom je dat je betáált om te exporteren, ontlast je het net (minder overschot = minder congestie) én houd je energie achter om juist op de dure piekuren terug te leveren. Een 'dom' systeem dumpt het overschot en mist dit.</dd>
+      <dt>Gebalanceerde batterij</dt><dd>De grootte waarbij je PV-overschot en avond/nacht-behoefte de batterij dagelijks net kunnen vullen en legen. Een grotere batterij helpt daarboven nauwelijks meer (vult/leegt dan zelden helemaal).</dd>
+      <dt>Waarom niet een grotere batterij?</dt><dd>Boven de gebalanceerde maat verdienen extra kWh zich nauwelijks terug. Een grotere accu vult/leegt zelden vol — in de zomer is je PV-overschot op, in de winter heb je te weinig dure-uren-last om te verschuiven (en terugleveren mag niet). Winter dal→piek-arbitrage levert marginaal maar ~€1-7 per extra kWh per jaar, terwijl je ~€20-30 per kWh per jaar nodig hebt om die kWh terug te verdienen. Uitzondering: een <b>warmtepomp-huis</b> (veel continue winterlast) of toenemende prijsvolatiliteit schuift die grens omhoog.</dd>
+      <dt>Ongestuurd vs slim EV-laden</dt><dd><b>Ongestuurd:</b> je plugt in bij thuiskomst (~17-19u) en de auto laadt meteen op vol vermogen — precies in de avondpiek (17-21u), de duurste uren. <b>Slim:</b> de lader verschuift naar de goedkoopste blokken: nacht-dal en/of middag-PV. Dat scheelt grofweg <b>15-45% van je laadkosten</b> (≈€100-200/jaar). Hoe meer je overdag thuis bent, hoe groter het % (meer bijna-gratis zon); rijd je veel/ben je weinig thuis, dan leunt de winst op nacht-vs-avond — kleiner %, omdat de energiebelasting (~€0,135/kWh) bij béíde wordt opgeteld en het relatieve verschil indrukt. Op volatiele winterdagen is het verschil groter dan dit gemiddelde.</dd>
+      <dt>Batterij gebruiken om de EV te laden?</dt><dd>Meestal niet lonend: goedkope nachtstroom of directe zon zijn vrijwel altijd voordeliger dan de batterij ontladen (~15% verlies) om de auto te laden — en de accu is 's avonds vaak al leeg door de huislast. Het loont alléén als de auto in <b>dure uren móét laden</b> (geen goedkoop nachtvenster) én de batterij nog gratis/goedkope (zon)energie over heeft mét ruimte: dan vermijd je de piekprijs minus het verlies. Een randgeval, geen kernreden voor een batterij; het wordt interessanter als nachtstroom duurder wordt.</dd>
+      <dt>Bruto vs netto capaciteit (batterij)</dt><dd>Bruto = de capaciteit die je koopt (staat op de doos/offerte). Netto = wat je er echt uit kunt halen, ≈ 90% daarvan — de rest blijft als beschermings-/reservemarge. Je betaalt voor bruto, maar gebruikt netto. Bv. 14,4 kWh bruto ≈ 13 kWh netto.</dd>
+      <dt>Omvormer</dt><dd>Zet gelijkstroom (panelen/batterij) om naar wisselstroom voor je huis. Het kW-vermogen bepaalt hoe snel je kunt laden/ontladen.</dd>
+    </dl>
+  </details>
+
+  <h2>Jaarlijkse energiekosten per configuratie</h2>
+  <div class="grid cards" id="cards"></div>
+  <div class="note" id="evNote" style="display:none;"></div>
+  <div class="note" id="slimNote" style="display:none;background:var(--good-bg);"></div>
+
+  <div class="chartbox"><canvas id="chart" role="img" aria-label="Staafdiagram jaarkosten per configuratie"></canvas></div>
+
+  <h2 class="advonly">Wat draagt wat bij?</h2>
+  <table class="bd advonly" id="breakdown"></table>
+  <div class="note" id="advice"></div>
+
+  <p class="foot">
+    Model: representatieve dag per maand × 24u, gekalibreerd op zelfvoorziening 79% en vast-tarief-kosten uit de volledige 15-min simulatie (werkelijke Tibber-prijzen 2025 + gemeten 2026). Vast tarief: €0,28/kWh import, €0,00 teruglevering (na afbouw saldering). Dynamisch: gemeten 2026-spotvorm + €0,135 heffing import, spot −€0,02 export. "Slim sturen" = ontlaad-timing + predrain (DP-plafond; realistisch ~60-80% haalbaar met day-ahead sturing). Flexibele lasten (wasmachine, vaatwasser) verschuif je deels naar zonuren. <b>Onbalansmarkt-handel is bewust niet meegenomen</b>: dat verdienmodel laat de batterij hard mee-schakelen met netfrequentie-signalen en kan netcongestie juist <i>versterken</i> in plaats van oplossen — het tegenovergestelde van lokaal zelfverbruik + curtailment, die het net juist ontlasten. De gebalanceerde-batterij-suggestie is <b>de maat waarboven een grotere batterij nauwelijks nog helpt</b>: die je PV-overschot en avond/nacht-behoefte dagelijks net kan vullen/legen, niet payback-gedreven (terugverdientijd staat los in de tabel). Cijfers indicatief; absolute bedragen hangen af van lokale situatie en prijsontwikkeling.
+  </p>
+
+  <div class="srcbox">
+    <div style="font-weight:600;color:var(--text);margin-bottom:6px;">Bronnen &amp; meer lezen</div>
+    <ul style="margin:0;padding-left:18px;">
+      <li><a href="https://www.milieucentraal.nl/energie-besparen/zonnepanelen/salderingsregeling-voor-zonnepanelen/" target="_blank" rel="noopener">Milieu Centraal — zonnepanelen &amp; saldering</a> (onafhankelijke uitleg)</li>
+      <li><a href="https://www.rijksoverheid.nl/themas/klimaat-milieu-en-natuur/energie-thuis/salderingsregeling" target="_blank" rel="noopener">Rijksoverheid — salderingsregeling stopt in 2027</a></li>
+      <li><a href="https://www.innovaenergie.nl/kennisbank/energiebelasting-2026/" target="_blank" rel="noopener">Energiebelasting 2026</a> (~€0,0916/kWh excl. BTW)</li>
+      <li><a href="https://jeroen.nl/dynamische-energie/stroom/prijzen/negatief" target="_blank" rel="noopener">Negatieve stroomprijzen uitgelegd</a> (omslag afname ~−€0,135/kWh)</li>
+      <li><a href="https://bereken-thuisbatterij.nl/" target="_blank" rel="noopener">Thuisbatterij terugverdientijd-calculator</a> (ter vergelijking)</li>
+      <li><a href="https://thuisbatterijenhulp.nl/kennisbank/verdienmodellen-van-een-thuisbatterij/" target="_blank" rel="noopener">Verdienmodellen thuisbatterij</a> (incl. onbalansmarkt + risico's)</li>
+      <li><a href="https://www.zonneplan.nl/laadpaal/auto-laden-met-een-dynamisch-energiecontract" target="_blank" rel="noopener">Zonneplan — EV laden met dynamisch contract</a> (slim vs avondpiek)</li>
+      <li><a href="https://tapelectric.app/nl/blog/wat-kost-het-opladen-van-een-elektrische-auto-in-nederland-in-2026/" target="_blank" rel="noopener">Tap Electric — wat kost EV-laden in 2026</a> (slim-laad-gemiddelde ~€0,18/kWh)</li>
+      <li><a href="https://woninglabel.nl/labelnieuws/dynamische-energiecontracten-slim-laden" target="_blank" rel="noopener">Woninglabel — dynamische contracten &amp; slim laden</a></li>
+    </ul>
+  </div>
+</div>
+
+<script>
+const YIELD=909, LEVY=0.135, FEED_MARGIN=0.02, RTE=0.90, RESERVE_FRAC=0.12, MISMATCH=0.72, DIRECT_MM=0.70;
+let PVM=[0.030,0.050,0.085,0.115,0.135,0.130,0.130,0.110,0.080,0.055,0.030,0.025];
+const sPVM=PVM.reduce((a,b)=>a+b,0); PVM=PVM.map(x=>x/sPVM);
+const DAYS=[31,28,31,30,31,30,31,31,30,31,30,31];
+let PVD=[0,0,0,0,0,0,0.01,0.03,0.06,0.09,0.115,0.13,0.135,0.13,0.11,0.08,0.05,0.025,0.01,0.005,0,0,0,0];
+const sPVD=PVD.reduce((a,b)=>a+b,0); PVD=PVD.map(x=>x/sPVD);
+let LD=[0.03,0.025,0.022,0.022,0.025,0.035,0.05,0.062,0.045,0.03,0.026,0.028,0.03,0.028,0.028,0.034,0.05,0.078,0.095,0.088,0.072,0.055,0.045,0.034];
+const sLD=LD.reduce((a,b)=>a+b,0); LD=LD.map(x=>x/sLD);
+const SPOT=[0.129,0.123,0.119,0.116,0.117,0.12,0.133,0.143,0.139,0.117,0.091,0.07,0.056,0.046,0.047,0.062,0.087,0.119,0.151,0.175,0.189,0.175,0.155,0.138];
+const _nrm=a=>{const s=a.reduce((x,y)=>x+y,0);return a.map(x=>x/s);};
+const EV_MID=_nrm([0,0,0,0,0,0,0,0,0,0.10,0.16,0.18,0.18,0.16,0.12,0.07,0.03,0,0,0,0,0,0,0]);
+const EV_NIGHT=_nrm([0.18,0.20,0.20,0.18,0.12,0.06,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.06]);
+const EV_EVE=_nrm([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.12,0.24,0.24,0.20,0.12,0.06,0]);
+const FLEX=_nrm([0,0,0,0,0,0,0,0,0.04,0.10,0.15,0.17,0.17,0.15,0.13,0.08,0.04,0,0,0,0,0,0,0]);
+
+function simulate(o){
+  const pvAnnual=o.kwp*YIELD, evKwh=o.evKm*(o.evPerKm||0.20)*((o.homePct==null?100:o.homePct)/100), battUsable=Math.max(0,o.battNet*(1-RESERVE_FRAC));
+  const pr=1+(o.priceRise||0);
+  const hf=Math.max(0,Math.min(1,(o.daysHome||0)/7));
+  const ev=o.evSmart? EV_MID.map((v,i)=>hf*v+(1-hf)*EV_NIGHT[i]) : EV_EVE;
+  let imp=0,exp=0,pvUsed=0,pvTotal=0,negKwh=0,negCost=0,cost=0,soc=battUsable*0.5,evPv=0,evTot=0;
+  for(let m=0;m<12;m++){
+    const pvMonth=pvAnnual*PVM[m], summer=(m>=3&&m<=8);
+    const negI=PVM[m]/Math.max(...PVM);
+    for(let d=0;d<DAYS[m];d++){
+      const pvD=pvMonth/DAYS[m], flex=Math.min(o.flex||0,o.house), baseD=(o.house-flex)/365, flexD=flex/365, evD=evKwh/365;
+      for(let h=0;h<24;h++){
+        const evl=evD*ev[h], pv=pvD*PVD[h], load=baseD*LD[h]+flexD*FLEX[h]+evl; evTot+=evl;
+        pvTotal+=pv;
+        let spot=SPOT[h]*pr;
+        if(summer&&h>=10&&h<=15) spot=(SPOT[h]-0.13*negI)*pr;
+        const isNeg=spot<=0;
+        const direct=Math.min(pv,load)*DIRECT_MM; pvUsed+=direct;
+        if(evl>0&&load>0) evPv+=direct*(evl/load);
+        let surplus=pv-direct, deficit=load-direct;
+        // Splits het tekort in huis vs auto. De batterij dekt ALLEEN de huislast —
+        // niet het auto-laden (de accu is 's avonds al leeg door de huislast, en
+        // ontladen voor de auto loont niet t.o.v. goedkope nachtstroom).
+        let houseDef=load>0?deficit*((load-evl)/load):deficit, evDef=load>0?deficit*(evl/load):0;
+        if(o.battNet>0){
+          if(surplus>0){const room=battUsable-soc;const chg=Math.min(surplus*MISMATCH,room,o.battNet*0.37);soc+=chg;surplus-=chg;}
+          if(houseDef>0){const dis=Math.min((houseDef*MISMATCH)/RTE,soc,o.battNet*0.37);const del=dis*RTE;soc-=dis;houseDef-=del;pvUsed+=del;}
+        }
+        let hImp=houseDef+evDef,hExp=surplus;
+        if(o.curtail&&isNeg) hExp=0;
+        if(isNeg&&hExp>0){negKwh+=hExp;negCost+=hExp*Math.abs(spot);}
+        imp+=hImp; exp+=hExp;
+        if(o.tariff==='fixed') cost+=hImp*(o.fixedPrice||0.28);
+        else cost+=hImp*(spot+LEVY)-hExp*(spot-FEED_MARGIN);
+      }
+    }
+  }
+  let smartSave=0,winterArb=0;
+  if(o.smart&&o.tariff==='dyn'&&o.battNet>0){
+    smartSave=42*(o.kwp/6)*(battUsable/7.04)*pr;        // zomer PV-timing/predrain
+    winterArb=6*o.battNet*pr;                            // winter dal->piek arbitrage (PV vult batterij dan niet)
+    cost-=smartSave+winterArb;}
+  const loadTotal=o.house+evKwh;
+  const selfSuff=loadTotal>0?Math.max(0,Math.min(1,(loadTotal-imp)/loadTotal)):0;
+  const selfCons=pvTotal>0?Math.min(1,pvUsed/pvTotal):0;
+  return {cost:Math.round(cost),imp:Math.round(imp),exp:Math.round(exp),pv:Math.round(pvTotal),
+    selfSuff:Math.round(selfSuff*100),selfCons:Math.round(selfCons*100),
+    evKwh:Math.round(evTot),evPvPct:evTot>0?Math.round(100*evPv/evTot):0,
+    negKwh:Math.round(negKwh),negCost:Math.round(negCost),smartSave:Math.round(smartSave),winterArb:Math.round(winterArb),
+    avgPrice:imp>0?cost/imp:0};
+}
+const ARB_RT=0.85, ARB_HAIR=0.75;
+function batArb(o){
+  if(o.tariff!=='dyn'||o.battNet<=0) return {summer:0,winter:0,total:0};
+  const battU=o.battNet*(1-RESERVE_FRAC),pr=1+(o.priceRise||0),evKwh=o.evKm*(o.evPerKm||0.20)*((o.homePct==null?100:o.homePct)/100),rate=o.battNet*0.37;
+  const ev=o.evSmart? EV_NIGHT : EV_EVE;
+  let summer=0,winter=0;
+  for(let m=0;m<12;m++){const su=(m>=3&&m<=8),negI=PVM[m]/Math.max(...PVM);
+    const spots=[],loads=[];
+    const flex=Math.min(o.flex||0,o.house),baseA=(o.house-flex)/365,flexA=flex/365;
+    for(let h=0;h<24;h++){let sp=SPOT[h]*pr;if(su&&h>=10&&h<=15)sp=(SPOT[h]-0.13*negI)*pr;spots.push(sp);loads.push(baseA*LD[h]+flexA*FLEX[h]+(evKwh/365)*ev[h]);}
+    const exp=[...Array(24).keys()].sort((a,b)=>spots[b]-spots[a]);
+    let delivered=0,dCost=0;const cap=battU*ARB_RT;
+    for(const h of exp){if(delivered>=cap)break;const d=Math.min(loads[h],rate,cap-delivered);if(d>0){delivered+=d;dCost+=d*(spots[h]+LEVY);}}
+    let need=delivered/ARB_RT,charged=0,cCost=0;
+    const chp=[...Array(24).keys()].sort((a,b)=>spots[a]-spots[b]);
+    for(const h of chp){if(charged>=need)break;const c=Math.min(rate,need-charged);charged+=c;cCost+=c*(spots[h]+LEVY);}
+    const daySave=Math.max(0,dCost-cCost)*ARB_HAIR*DAYS[m];
+    if(su)summer+=daySave;else winter+=daySave;}
+  return {summer:Math.round(summer),winter:Math.round(winter),total:Math.round(summer+winter)};
+}
+
+function suggestPower(usable,induction,heatpump){
+  let power=Math.max(heatpump?3.5:2.5, usable/2.7);
+  if(induction) power=Math.max(power,3.0);
+  return Math.round(power*2)/2;
+}
+// Balans-maat: punt waarboven extra capaciteit nauwelijks meer zelfconsumptie geeft. Daarboven vult/leegt de batterij
+// zelden vol (PV-overschot of avond/nacht-behoefte is op) -> extra kWh helpt nauwelijks.
+function suggestBalance(b,heatpump){
+  // Maat = dekking van de avond/nacht-HUISLAST (de uren zonder PV die je uit de
+  // batterij haalt). b.house is huis-only (auto telt niet mee; eigen lader).
+  // Op dynamisch kun je de batterij ook 's nachts goedkoop bijladen, dus de
+  // avond/nacht-behoefte is de leidende maat — niet de PV-overschot-knie.
+  const daily=b.house/365, darkFrac=heatpump?0.65:0.55;
+  let usable=Math.round(daily*darkFrac*2)/2;
+  usable=Math.max(2,Math.min(usable,30));
+  const at0=simulate({...b,battNet:0,smart:true});
+  const atK=simulate({...b,battNet:usable,smart:true});
+  return {usable, sc0:at0.selfCons, scK:atK.selfCons, ssK:atK.selfSuff, exp0:at0.exp};
+}
+const $=id=>document.getElementById(id);
+let state={tariff:'dyn',priceRise:0,curtail:false,evSmart:true,pvMode:'count',view:'simpel'};
+let chart;
+function kwpFromInputs(){return state.pvMode==='count'?(+$('npanel').value*+$('wppanel').value)/1000:+$('kwptotal').value;}
+function readBase(){const hasPV=$('hasPV').checked,hasBatt=$('hasBatt').checked,hasEV=$('hasEV').checked;
+  const evPerKm=(+$('evcons').value>0?+$('evcons').value:20)/100, homePct=+$('homepct').value, evKm=hasEV?+$('evkm').value:0;
+  const evHome=evKm*evPerKm*(homePct/100);
+  const entered=+$('house').value, inclCar=$('inclcar').checked;
+  const housePure=(inclCar&&hasEV)?Math.max(300,entered-evHome):entered;
+  return {kwp:hasPV?Math.round(kwpFromInputs()*10)/10:0,house:housePure,enteredHouse:entered,evHome:Math.round(evHome),inclCar,flex:+$('flex').value,evKm,homePct,
+  evPerKm,fixedPrice:(+$('fixedprice').value>0?+$('fixedprice').value:0.28),
+  battNet:hasBatt?+$('batt').value:0,daysHome:+$('dhome').value,evSmart:state.evSmart,
+  tariff:state.tariff,curtail:state.curtail,priceRise:state.priceRise};}
+const eur=n=>'€'+Math.round(n).toLocaleString('nl-NL');
+
+function recompute(){
+  const b=readBase();
+  document.querySelectorAll('[data-need]').forEach(el=>{const n=el.getAttribute('data-need'),pm=el.getAttribute('data-pvmode');
+    let show=(n==='pv'&&$('hasPV').checked)||(n==='batt'&&$('hasBatt').checked)||(n==='ev'&&$('hasEV').checked)||(n==='fixed'&&state.tariff==='fixed');
+    if(show&&pm) show=(pm===state.pvMode);
+    el.style.display=show?'':'none';});
+  document.querySelectorAll('.advonly').forEach(el=>{el.style.display=state.view==='uitgebreid'?'':'none';});
+  const induction=$('induction').checked, heatpump=$('heatpump').checked;
+  const pvInv=$('hasPV').checked?(Math.round(b.kwp*0.85*10)/10):0;
+  if(b.kwp>0){
+    const est=suggestBalance(b,heatpump), power=suggestPower(est.usable,induction,heatpump), nameplate=Math.round(est.usable/0.9);
+    $('estText').innerHTML='Gebalanceerde batterij voor '+b.kwp+' kWp + '+b.house.toLocaleString('nl-NL')+' kWh/jaar: ~<b>'+est.usable+' kWh netto</b> (≈'+nameplate+' kWh bruto, wat je koopt), omvormer ~<b>'+power+' kW</b>'+
+      (pvInv>0?', PV-omvormer ~<b>'+pvInv+' kW</b> (≈0,85×kWp)':'')+'.<br>'+
+      'Een <b>grotere batterij helpt daarboven nauwelijks</b>: hij vult of leegt dan zelden helemaal (je PV-overschot of je avond/nacht-verbruik is op). Zelfconsumptie ~'+est.scK+'% (van '+est.sc0+'% zonder batterij), zelfvoorziening ~'+est.ssK+'%. EV telt niet mee (eigen lader); inductie-pieken (~7 kW) deels via het net.';
+    $('estApply').onclick=()=>{$('hasBatt').checked=true;$('batt').value=est.usable;recompute();};
+  } else {
+    $('estText').innerHTML='Vink <b>Zonnepanelen</b> aan om een gebalanceerde batterij-maat te berekenen. Zonder PV draait een batterij puur op prijs-arbitrage (zie de terugverdien-regels onderaan).';
+    $('estApply').onclick=()=>{};
+  }
+  $('tariffNote').textContent=state.tariff==='fixed'?('(vast: €'+b.fixedPrice.toFixed(2).replace('.',',')+'/kWh import, €0 terug)'):'(dyn: spot + €0,135 heffing)';
+  $('kwpOut').textContent='= '+b.kwp.toFixed(1).replace('.',',')+' kWp';
+  $('npOut').textContent='bruto ≈'+(b.battNet/0.9).toFixed(1)+' kWh';
+  $('hpOut').textContent=b.evKm>0?(b.homePct+'%'):'n.v.t.';
+  $('dhOut').textContent=b.evKm>0?(b.daysHome+' d/wk'):'n.v.t.';
+  const hems=state.evSmart;
+  const A=simulate({...b,kwp:0,battNet:0,smart:false});
+  const B=simulate({...b,battNet:0,smart:false});
+  const C=simulate({...b,smart:false});
+  const D=simulate({...b,smart:true});
+  const cards=[['Geen PV / batterij',A,{...b,kwp:0,battNet:0,smart:false}]];
+  if(b.kwp>0) cards.push(['Alleen panelen',B,{...b,battNet:0,smart:false}]);
+  if(b.battNet>0) cards.push([(b.kwp>0?'PV + batterij':'Batterij')+(hems?' (buffer)':''),C,{...b,smart:false}]);
+  if(b.battNet>0&&hems) cards.push([(b.kwp>0?'PV + batterij':'Batterij')+' + slim HEMS',D,{...b,smart:true}]);
+  $('cards').innerHTML=cards.map(([t,r,cfg],i)=>{
+    const save=i>0?A.cost-r.cost:0;
+    const sv=i>0?`<div class="delta">−${eur(save)}/jr vs niets</div>`:'';
+    const ss=(b.kwp>0&&i>0)?`<div class="delta" style="color:var(--muted)">zelfvoorz. ${r.selfSuff}% · zelfcons. ${r.selfCons}%</div>`:'';
+    let ev='';
+    if(b.evKm>0){const c0=simulate({...cfg,evKm:0}).cost; ev=`<div class="delta" style="color:var(--muted)">huis ${eur(c0)} · auto-laden ${eur(Math.max(0,r.cost-c0))}</div>`;}
+    return `<div class="metric"><div class="lbl">${t}</div><div class="val">${eur(r.cost)}</div>${sv}${ss}${ev}</div>`;
+  }).join('');
+  if(b.evKm>0){
+    const total=b.inclCar?b.enteredHouse:(b.house+D.evKwh);
+    const Dsm=simulate({...b,smart:true,evSmart:true}), Ddm=simulate({...b,smart:true,evSmart:false});
+    const noEVcost=simulate({...b,smart:true,evKm:0}).cost;
+    const dumbCharge=Ddm.cost-noEVcost, slimSave=Math.max(0,Ddm.cost-Dsm.cost);
+    const pct=dumbCharge>0?Math.round(100*slimSave/dumbCharge):0;
+    $('evNote').style.display='';
+    $('evNote').innerHTML='<b>Auto thuisladen:</b> ~'+Dsm.evKwh.toLocaleString('nl-NL')+' kWh/jaar = '+Math.round(100*Dsm.evKwh/total)+'% van je '+total.toLocaleString('nl-NL')+' kWh. '+
+      (state.tariff==='dyn'?('Slim laden (zon + goedkope uren) laadt ~'+Dsm.evPvPct+'% op eigen zon en scheelt ~<b>'+eur(slimSave)+'/jaar (~'+pct+'%)</b> t.o.v. ongestuurd op de avondpiek.'):'Bij vast tarief maakt het laadmoment niet uit (één prijs).');
+  } else $('evNote').style.display='none';
+  if(state.tariff==='dyn'&&(b.battNet>0||b.evKm>0)){
+    const allSmart=simulate({...b,smart:true,evSmart:true});
+    const noSmart=simulate({...b,smart:false,evSmart:false});
+    const evPart=b.evKm>0?simulate({...b,smart:true,evSmart:false}).cost-allSmart.cost:0;
+    const batPart=b.battNet>0?simulate({...b,smart:false,evSmart:true}).cost-allSmart.cost:0;
+    const totSlim=Math.max(0,noSmart.cost-allSmart.cost);
+    let parts=[];
+    if(b.evKm>0)parts.push('slim EV-laden '+eur(Math.max(0,evPart)));
+    if(b.battNet>0)parts.push('slim batterij-sturen '+eur(Math.max(0,batPart)));
+    $('slimNote').style.display='';
+    $('slimNote').innerHTML='<b>Slim sturen levert samen ~'+eur(totSlim)+'/jaar op</b> t.o.v. dezelfde panelen/batterij/auto zónder sturing'+(parts.length?' — '+parts.join(' + '):'')+'. (Alleen bij dynamisch tarief; bij vast tarief maakt het sturen niet uit.)';
+  } else $('slimNote').style.display='none';
+
+  const evK=b.evKm*(b.evPerKm||0.20)*(b.homePct/100), loadTotal=b.house+evK;
+  const pvCost=+$('pvcost').value, battCost=+$('cost').value, years=+$('years').value;
+  const arb=batArb(b);
+  const batOnly=(b.battNet>0&&b.tariff==='dyn')?A.cost-arb.total:null;
+  const pvSave=A.cost-B.cost, battSaveWithPv=B.cost-D.cost, battSaveNoPv=batOnly!=null?arb.total:0;
+  const outstanding=(c,s)=>{const r=Math.max(0,c-Math.max(0,s)*years); return s>0?(r<=0?'volledig terugverdiend':eur(r)+' open'):eur(c)+' open (geen besparing)';};
+  const evDumb=b.evKm>0?simulate({...b,smart:true,evSmart:false}):null;
+  const pb=(c,save)=>save>0?Math.round(c/save)+' jaar':'verdient niet terug';
+  const eurKwh=v=>'€'+v.toFixed(2).replace('.',',')+'/kWh';
+  const dyn=state.tariff==='dyn', rows=[];
+  if(b.kwp>0) rows.push(['PV-eigenverbruik (panelen vs niets)','−'+eur(A.cost-B.cost)+'/jr']);
+  if(b.battNet>0){
+    if(b.kwp>0) rows.push(['Batterij-buffer (PV vs PV+batterij)','−'+eur(B.cost-C.cost)+'/jr']);
+    if(hems){
+      rows.push(['Slim sturen batterij — PV-timing/predrain (zomer)', dyn?'−'+eur(D.smartSave)+'/jr':'n.v.t. (alleen dynamisch)']);
+      rows.push(['Batterij dal→piek arbitrage (vooral winter)', dyn?'−'+eur(D.winterArb)+'/jr':'n.v.t. (alleen dynamisch)']);
+    }
+  }
+  if(b.evKm>0){
+    const evPvK=Math.round(D.evKwh*D.evPvPct/100), evGridK=D.evKwh-evPvK;
+    rows.push(['EV thuis geladen: '+D.evKwh+' kWh ('+b.homePct+'% van '+Math.round(b.evKm*(b.evPerKm||0.20))+' kWh) = '+Math.round(100*evK/loadTotal)+'% van verbruik','']);
+    if(b.kwp>0) rows.push(['→ op eigen zon: '+evPvK+' kWh ('+D.evPvPct+'%) · op grid-prijs: '+evGridK+' kWh','']);
+    if(evDumb&&dyn&&hems) rows.push(['Slim EV-laden (vs ongestuurd avond)', '−'+eur(evDumb.cost-D.cost)+'/jr']);
+  }
+  if(b.kwp>0){
+    rows.push(['Zelfvoorziening (% verbruik uit eigen PV)', D.selfSuff+'%']);
+    rows.push(['Zelfconsumptie (% van je PV zelf gebruikt)', D.selfCons+'%']);
+  }
+  rows.push(['Gem. prijs per kWh netafname', D.imp>0?eurKwh(D.avgPrice):'—']);
+  if(b.kwp>0) rows.push(['Naar net bij negatieve prijs (kost geld)', state.curtail?'0 kWh (gecurtaild)':D.negKwh+' kWh → '+eur(D.negCost)+'/jr']);
+  const tvt=[];
+  if(b.kwp>0) tvt.push(['Panelen alleen ('+b.kwp.toFixed(1).replace('.',',')+' kWp)', pb(pvCost,pvSave)]);
+  if(b.battNet>0) tvt.push(['Batterij mét panelen', pb(battCost,battSaveWithPv)]);
+  if(b.battNet>0) tvt.push(['Batterij zónder panelen (arbitrage z.€'+arb.summer+'+w.€'+arb.winter+')', batOnly!=null?'−'+eur(battSaveNoPv)+'/jr → '+pb(battCost,battSaveNoPv):'n.v.t. (vast tarief)']);
+  if(b.kwp>0&&b.battNet>0) tvt.push(['Panelen + batterij samen', pb(pvCost+battCost,A.cost-D.cost)]);
+  if(tvt.length){rows.push(['— Terugverdientijd —','']); tvt.forEach(r=>rows.push(r));}
+  const opn=[];
+  if(b.kwp>0) opn.push(['Panelen', outstanding(pvCost,pvSave)]);
+  if(b.battNet>0) opn.push(['Batterij', outstanding(battCost,battSaveWithPv)]);
+  if(opn.length){rows.push(['— Nog terug te verdienen (na '+years+' jaar) —','']); opn.forEach(r=>rows.push(r));}
+  $('breakdown').innerHTML=rows.map(([a,v])=>v===''&&a.startsWith('—')?`<tr><td colspan="2" style="font-weight:500;color:var(--muted);border-bottom:none;padding-top:12px">${a.replace(/—/g,'').trim()}</td></tr>`:`<tr><td>${a}</td>${v!==undefined?`<td>${v}</td>`:'<td></td>'}</tr>`).join('');
+
+  let adv='';
+  if(state.tariff==='dyn'&&!state.curtail&&D.negKwh>150){
+    adv=`<span class="pill warn">advies</span> Je exporteert ~${D.negKwh} kWh/jaar bij negatieve prijzen — dat kost geld. `+
+        `Een slim systeem vangt dat zoveel mogelijk op door PV op die momenten in batterij + EV te sturen (laden afgestemd op prijs en zon) i.p.v. het net op te duwen: dat voorkomt overschot, ontlast het net, en bewaart energie om juist op de dure piekuren terug te leveren. `+
+        `Wat dan nog overblijft kun je curtailen (panelen terugregelen): dynamisch zou dan ${eur(simulate({...b,smart:true,curtail:true}).cost)} kosten i.p.v. ${eur(D.cost)}.`;
+  } else if(state.curtail){
+    adv=`<span class="pill good">curtailment aan</span> Negatieve-prijs-export wordt vermeden. Dit is de gunstigste opstelling — aanbevolen voor wie de omvormer kan terugregelen.`;
+  } else {
+    adv=`<span class="pill">tip</span> Bij dynamisch tarief komt de meeste waarde uit PV-eigenverbruik en de dag-nacht-buffer. Slim sturen voegt toe naarmate prijzen stijgen en je dak voller is.`;
+  }
+  if(b.kwp>=7) adv+=` Met een vol dak (${b.kwp} kWp) vult de batterij snel; EV + flexibele lasten (wasmachine) dempen de rest van de middag-piek.`;
+  $('advice').innerHTML=adv;
+
+  const palette=['#888780','#378add','#1d9e75','#0f6e56'];
+  const labels=cards.map(c=>c[0].replace(' (buffer)','').replace('PV + batterij','PV+batt').replace(' + slim HEMS','+slim').replace('Geen PV / batterij','Geen'));
+  const data=cards.map(c=>c[1].cost);
+  if(chart) chart.destroy();
+  chart=new Chart($('chart'),{type:'bar',
+    data:{labels,datasets:[{label:'€/jaar',data,backgroundColor:cards.map((_,i)=>palette[i]||'#0f6e56'),borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>eur(c.parsed.y)+'/jaar'}}},
+      scales:{y:{ticks:{callback:v=>'€'+v}},x:{grid:{display:false}}}}});
+}
+
+document.querySelectorAll('#pr button').forEach(btn=>btn.onclick=()=>{
+  document.querySelectorAll('#pr button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  state.priceRise=+btn.dataset.v;recompute();});
+document.querySelectorAll('#tariff button').forEach(btn=>btn.onclick=()=>{
+  document.querySelectorAll('#tariff button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  state.tariff=btn.dataset.v;recompute();});
+document.querySelectorAll('#hems button').forEach(btn=>btn.onclick=()=>{
+  document.querySelectorAll('#hems button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  state.evSmart=(btn.dataset.v==='aan');recompute();});
+document.querySelectorAll('#pvmode button').forEach(btn=>btn.onclick=()=>{
+  document.querySelectorAll('#pvmode button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  state.pvMode=btn.dataset.v;recompute();});
+document.querySelectorAll('#viewmode button').forEach(btn=>btn.onclick=()=>{
+  document.querySelectorAll('#viewmode button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  state.view=btn.dataset.v;recompute();});
+$('curtail').onchange=e=>{state.curtail=e.target.checked;recompute();};
+['induction','heatpump','hasPV','hasBatt','hasEV','inclcar'].forEach(id=>$(id).onchange=recompute);
+['npanel','wppanel','kwptotal','house','flex','fixedprice','evkm','evcons','homepct','dhome','batt','pvcost','cost','years'].forEach(id=>$(id).oninput=recompute);
+recompute();
+</script>
+</body>
+</html>
