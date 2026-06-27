@@ -81,7 +81,17 @@
     <span><span style="font-size:13px;color:var(--muted);margin-right:8px;">Slim HEMS</span>
       <span class="seg" id="hems"><button data-v="aan" class="on">aan</button><button data-v="uit">uit</button></span></span>
   </div>
-  <p style="font-size:12px;color:var(--hint);margin:-2px 0 14px;">Slim HEMS = een systeem dat EV-laden én batterij slim op prijs/zon aanstuurt. Zet 'm uit/aan om het verschil te zien. (Werkt alleen bij dynamisch tarief.)</p>
+  <p style="font-size:12px;color:var(--hint);margin:-2px 0 8px;">Slim HEMS = een systeem dat EV-laden én batterij slim op prijs/zon aanstuurt. Zet 'm uit/aan om het verschil te zien. (Werkt alleen bij dynamisch tarief.)</p>
+
+  <details class="gloss" style="margin:0 0 14px;">
+    <summary>Hoe kom je aan een HEMS? — open-source (Home Assistant) of commercieel</summary>
+    <dl>
+      <dt>Wat is een HEMS?</dt><dd>Home Energy Management System: software die je zonnepanelen, batterij, laadpaal en soms warmtepomp samen aanstuurt op stroomprijs en zon. De <b>hardware</b> (panelen, batterij) levert de waarde; de HEMS is het <b>brein</b> dat ze laat samenwerken.</dd>
+      <dt>Route 1 — Open-source / zelfbouw (zoals dit systeem)</dt><dd>Wat hier draait, is gebouwd op <b>Home Assistant</b> (gratis, open-source). Het draait op een klein kastje thuis (mini-pc, Raspberry Pi, of een HA Green/Yellow) en koppelt je omvormer, batterij, laadpaal, slimme meter (via de P1-poort) en dynamische prijzen (bv. Tibber, of de open ENTSO-E-prijsdata). De sturing maak je zelf of met community-projecten — bv. <b>EVCC</b> (evcc.io) voor slim laden, of eigen automatiseringen zoals wij.<br><b>Vinden:</b> home-assistant.io · het HA-forum &amp; GitHub · evcc.io.<br><b>Voor:</b> gratis software, merk-onafhankelijk, volledige controle, alle stromen in één systeem. <b>Tegen:</b> je bouwt en onderhoudt het zelf (of laat het bouwen) — vergt techniek en tijd.</dd>
+      <dt>Route 2 — Commercieel / kant-en-klaar</dt><dd>Een fabrikant of dienst regelt de sturing. Grofweg drie smaken: <b>(1)</b> de app van je <b>batterij-/omvormer-merk</b> met dynamische sturing (o.a. Zendure, Sessy, Marstek, HomeWizard, Victron, SolarEdge, Enphase); <b>(2)</b> een onafhankelijke <b>energie- of laad-dienst</b> die op uurprijzen stuurt (o.a. slim laden via Tibber/Frank Energie, of laadpaal-apps); <b>(3)</b> een <b>installateur-totaaloplossing</b>.<br><b>Vinden:</b> via je batterij-/laadpaal-leverancier, je energieleverancier, of een installateur.<br><b>Voor:</b> plug-and-play, support en garantie. <b>Tegen:</b> vaak een abonnement, meestal gebonden aan één merk, en lang niet altijd álle stromen (PV + batterij + EV + warmtepomp) geïntegreerd — soms stuurt het alleen de eigen batterij, of alleen het laden.</dd>
+      <dt>Doen die hetzelfde als wat hier gebouwd is?</dt><dd>Voor een groot deel wel. De grootste waarde — <b>PV-eigenverbruik + de dag-nacht-batterijcyclus</b> — zit in vrijwel elk fatsoenlijk systeem, en deze calculator laat zien dat dáár het meeste geld zit. Een eenvoudig commercieel systeem pakt dus al een flink stuk. Het verschil zit in de <b>randen</b>: alle stromen geïntegreerd aansturen (i.p.v. los), maatwerk zoals predrain bij negatieve prijzen, curtailment, en merk-onafhankelijkheid. Veel kant-en-klaar-systemen sturen maar één onderdeel; wat hier gebouwd is stuurt het geheel en zit daardoor dichter bij het maximum dat deze tool toont — maar dat laatste stukje is bewerkelijk en levert relatief weinig extra op (zie het blok "slim sturen levert ~€… op").</dd>
+    </dl>
+  </details>
 
   <div class="card">
     <div style="font-weight:600;font-size:15px;margin-bottom:4px;">1 · Wat heb je (of overweeg je)?</div>
