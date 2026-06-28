@@ -192,6 +192,7 @@
   </div>
 
   <h2>Jaarlijkse energiekosten per configuratie</h2>
+  <p class="intro">Per kaart: het grote bedrag is je <b>totale jaarkost</b>. Daaronder de besparing t.o.v. geen systeem, je zelfvoorziening, en — als je een auto invult — de <b>kostenverdeling</b>: welk deel van de jaarkost naar het huishouden gaat en welk deel naar het thuis opladen van de auto.</p>
   <div class="grid cards" id="cards"></div>
   <div class="note" id="evNote" style="display:none;"></div>
   <div class="note" id="slimNote" style="display:none;background:var(--good-bg);"></div>
@@ -383,7 +384,7 @@ function recompute(){
     const sv=i>0?`<div class="delta">−${eur(save)}/jr vs niets</div>`:'';
     const ss=(b.kwp>0&&i>0)?`<div class="delta" style="color:var(--muted)">zelfvoorz. ${r.selfSuff}% · zelfcons. ${r.selfCons}%</div>`:'';
     let ev='';
-    if(b.evKm>0){const c0=simulate({...cfg,evKm:0}).cost; ev=`<div class="delta" style="color:var(--muted)">huis ${eur(c0)} · auto-laden ${eur(Math.max(0,r.cost-c0))}</div>`;}
+    if(b.evKm>0){const c0=simulate({...cfg,evKm:0}).cost; ev=`<div class="delta" style="color:var(--muted)">kostenverdeling: huis ${eur(c0)} · auto-laden ${eur(Math.max(0,r.cost-c0))}</div>`;}
     return `<div class="metric"><div class="lbl">${t}</div><div class="val">${eur(r.cost)}</div>${sv}${ss}${ev}</div>`;
   }).join('');
   if(b.evKm>0){
