@@ -102,7 +102,7 @@
       <dt>Bruto vs netto capaciteit (batterij)</dt><dd>Bruto = de capaciteit die je koopt (staat op de doos of offerte). Netto = wat je er echt uit kunt halen, ≈ 90% daarvan. De rest blijft over als reserve om de batterij te beschermen. Je betaalt voor bruto, maar gebruikt netto. Bijvoorbeeld: 14,4 kWh bruto ≈ 13 kWh netto.</dd>
       <dt>Curtailment</dt><dd>Je panelen even terugregelen als teruglevering geld kóst (bij negatieve prijzen). Niet elke omvormer kan dit.</dd>
       <dt>Dynamisch tarief</dt><dd>De stroomprijs verandert per uur (bv. bij Tibber): 's nachts en overdag vaak goedkoop, in de avondpiek duur, en soms zelfs negatief.</dd>
-      <dt>Flexibele last</dt><dd>Apparaten die je naar de zonuren kunt verschuiven (wasmachine, vaatwasser, droger). Dat verhoogt je zelfconsumptie.</dd>
+      <dt>Flexibele last</dt><dd>Apparaten waarvan je zelf de tijd kiest: wasmachine, vaatwasser, droger. Draai je ze op <b>zonuren</b> (of goedkope daluren) in plaats van 's avonds, dan gebruik je je eigen zon direct en koop je minder dure avondstroom.<br>Wat het oplevert bij ~400 kWh/jaar: met <b>panelen zónder batterij</b> ~€40-60/jaar — daar telt het het meest. <b>Met een batterij</b> veel minder (~€15-20), want de batterij verschuift je stroom toch al. <b>Zonder panelen</b> alleen bij een dynamisch tarief (~€30, je draait dan op de goedkope uren); bij een vast tarief levert het dan niets op.<br>Hoe meer mensen in huis, hoe meer wasjes je kunt verschuiven — de winst schaalt mee met het aantal kWh. Met de schakelaar "ik verschuif deze naar zonuren" zie je het verschil meteen.</dd>
       <dt>Gebalanceerde batterij</dt><dd>De grootte waarbij je zonne-overschot en je avond- en nachtverbruik de batterij elke dag net kunnen vullen en legen. Een grotere batterij helpt daarboven nauwelijks meer (die raakt dan zelden helemaal vol of leeg).</dd>
       <dt>Negatieve prijzen: betaal je of bespaar je?</dt><dd>Als je stroom <b>afneemt</b>, betaal je áltijd energiebelasting (~€0,092/kWh in 2026) + inkoopvergoeding + btw, ook als de spotprijs negatief is. Pas als de spotprijs onder ~<b>−€0,135/kWh</b> zakt (2026), word je <b>per saldo betaald om stroom af te nemen</b>. Daarboven betaal je nog steeds.<br>Bij <b>teruglevering</b> ligt het anders: daarover betaal je <b>géén energiebelasting</b>, want die geldt alleen op afname. Je krijgt (of betaalt) alléén de kale energieprijs (spotprijs) van dat uur. Bij positieve prijzen krijg je dus ongeveer de spotprijs; bij negatieve prijzen betaal je enkel dat (meestal kleine) negatieve bedrag. Daarom kost terugleveren bij licht-negatieve prijzen vaak maar een paar cent per kWh. De winst van curtailment of predrain is dan ook klein. (Bij saldering werd de belasting nog weggestreept; vanaf 2027 vervalt dat, maar teruglevering blijft onbelast.) <b>Let op:</b> sommige leveranciers rekenen daarnaast een kleine marge per kWh en/of vaste terugleverkosten per maand. Dat verschilt per leverancier.<br>Het <b>doel</b> van slim sturen bij negatieve prijzen is dus niet verdienen, maar <b>besparen en het net ontlasten</b>: je voorkomt dat je betáált om terug te leveren, en je houdt de energie thuis. Iets verdienen is meegenomen, geen doel.</dd>
       <dt>Omvormer</dt><dd>Zet gelijkstroom (van panelen of batterij) om naar wisselstroom voor je huis. Het vermogen in kW bepaalt hoe snel je kunt laden en ontladen.</dd>
@@ -143,8 +143,9 @@
         <input type="number" id="house" value="5100" step="100"></div>
       <div class="field" data-need="ev"><label class="toggle" style="font-size:13px;color:var(--muted);"><input type="checkbox" id="inclcar" checked> Verbruik is incl. thuisladen van de auto</label>
         <span class="hint">aan: we halen de auto er rekenkundig uit; uit: het verbruik is zonder auto</span></div>
-      <div class="field"><label>Flexibele last op zon/dal (kWh/jr)<br><span class="hint">wasmachine, vaatwasser of droger die je met opzet overdag (op de zon) draait</span></label>
-        <input type="number" id="flex" value="400" step="50" min="0"></div>
+      <div class="field"><label>Flexibele last (kWh/jr)<br><span class="hint">wasmachine, vaatwasser of droger: apparaten waarvan je zelf kiest wanneer ze draaien. Reken ~300-600 kWh/jr per huishouden; meer mensen = meer wasjes = meer te verschuiven.</span></label>
+        <input type="number" id="flex" value="400" step="50" min="0">
+        <label class="toggle" style="font-size:13px;color:var(--muted);margin-top:8px;"><input type="checkbox" id="flexplan" checked> ik verschuif deze naar zonuren (planbaar)</label></div>
       <div class="field" data-need="fixed"><label>Vast tarief afname (€/kWh)<br><span class="hint">de prijs die je per kWh van het net betaalt</span></label>
         <input type="number" id="fixedprice" value="0.28" step="0.01" min="0"></div>
       <div class="field" data-need="fixed"><label>Vast teruglevertarief (€/kWh)<br><span class="hint">wat je krijgt per teruggeleverde kWh bij een vast contract. Vanaf 2027 (saldering stopt) wettelijk minimaal ~50% van het kale tarief — vandaar de default ~€0,07. Vul je eigen contract in.</span></label>
@@ -240,6 +241,7 @@ const FLEX=_nrm([0,0,0,0,0,0,0,0,0.04,0.10,0.15,0.17,0.17,0.15,0.13,0.08,0.04,0,
 function simulate(o){
   const pvAnnual=o.kwp*YIELD, evKwh=o.evKm*(o.evPerKm||0.20)*((o.homePct==null?100:o.homePct)/100), battUsable=Math.max(0,o.battNet*(1-RESERVE_FRAC));
   const pr=1+(o.priceRise||0);
+  const flexShape=(o.flexPlan===false)?LD:FLEX;  // niet-planbaar = zelfde vorm als basislast (avond/nacht), dus geen verschuif-voordeel
   const hf=Math.max(0,Math.min(1,(o.daysHome||0)/7));
   const ev=o.evSmart? EV_MID.map((v,i)=>hf*v+(1-hf)*EV_NIGHT[i]) : EV_EVE;
   let imp=0,exp=0,pvUsed=0,pvTotal=0,negKwh=0,negCost=0,cost=0,soc=battUsable*0.5,evPv=0,evTot=0;
@@ -249,7 +251,7 @@ function simulate(o){
     for(let d=0;d<DAYS[m];d++){
       const pvD=pvMonth/DAYS[m], flex=Math.min(o.flex||0,o.house), baseD=(o.house-flex)/365, flexD=flex/365, evD=evKwh/365;
       for(let h=0;h<24;h++){
-        const evl=evD*ev[h], pv=pvD*PVD[h], load=baseD*LD[h]+flexD*FLEX[h]+evl; evTot+=evl;
+        const evl=evD*ev[h], pv=pvD*PVD[h], load=baseD*LD[h]+flexD*flexShape[h]+evl; evTot+=evl;
         pvTotal+=pv;
         let spot=SPOT[h]*pr;
         if(summer&&h>=10&&h<=15) spot=(SPOT[h]-0.08*negI)*pr;
@@ -297,7 +299,7 @@ function batArb(o){
   for(let m=0;m<12;m++){const su=(m>=3&&m<=8),negI=PVM[m]/Math.max(...PVM);
     const spots=[],loads=[];
     const flex=Math.min(o.flex||0,o.house),baseA=(o.house-flex)/365,flexA=flex/365;
-    for(let h=0;h<24;h++){let sp=SPOT[h]*pr;if(su&&h>=10&&h<=15)sp=(SPOT[h]-0.08*negI)*pr;spots.push(sp);loads.push(baseA*LD[h]+flexA*FLEX[h]+(evKwh/365)*ev[h]);}
+    for(let h=0;h<24;h++){let sp=SPOT[h]*pr;if(su&&h>=10&&h<=15)sp=(SPOT[h]-0.08*negI)*pr;spots.push(sp);loads.push(baseA*LD[h]+flexA*(o.flexPlan===false?LD:FLEX)[h]+(evKwh/365)*ev[h]);}
     const exp=[...Array(24).keys()].sort((a,b)=>spots[b]-spots[a]);
     let delivered=0,dCost=0;const cap=battU*ARB_RT;
     for(const h of exp){if(delivered>=cap)break;const d=Math.min(loads[h],rate,cap-delivered);if(d>0){delivered+=d;dCost+=d*(spots[h]+LEVY);}}
@@ -337,7 +339,7 @@ function readBase(){const hasPV=$('hasPV').checked,hasBatt=$('hasBatt').checked,
   const evHome=evKm*evPerKm*(homePct/100);
   const entered=+$('house').value, inclCar=$('inclcar').checked;
   const housePure=(inclCar&&hasEV)?Math.max(300,entered-evHome):entered;
-  return {kwp:hasPV?Math.round(kwpFromInputs()*10)/10:0,house:housePure,enteredHouse:entered,evHome:Math.round(evHome),inclCar,flex:+$('flex').value,evKm,homePct,
+  return {kwp:hasPV?Math.round(kwpFromInputs()*10)/10:0,house:housePure,enteredHouse:entered,evHome:Math.round(evHome),inclCar,flex:+$('flex').value,flexPlan:$('flexplan').checked,evKm,homePct,
   evPerKm,fixedPrice:(+$('fixedprice').value>0?+$('fixedprice').value:0.28),fixedFeed:Math.max(0,+$('fixedfeed').value||0),
   battNet:hasBatt?+$('batt').value:0,daysHome:+$('dhome').value,evSmart:state.evSmart,
   tariff:state.tariff,curtail:state.curtail,priceRise:state.priceRise};}
@@ -490,6 +492,7 @@ document.querySelectorAll('#viewmode button').forEach(btn=>btn.onclick=()=>{
   state.view=btn.dataset.v;recompute();});
 $('curtail').onchange=e=>{state.curtail=e.target.checked;recompute();};
 ['induction','heatpump','hasPV','hasBatt','hasEV','inclcar'].forEach(id=>$(id).onchange=recompute);
+$('flexplan').onchange=recompute;
 ['npanel','wppanel','kwptotal','house','flex','fixedprice','fixedfeed','evkm','evcons','homepct','dhome','batt','pvcost','cost','years'].forEach(id=>$(id).oninput=recompute);
 recompute();
 </script>
