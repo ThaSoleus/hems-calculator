@@ -288,7 +288,7 @@ function simulate(o){
         if(o.curtail&&isNeg&&o.tariff!=='fixed') hExp=0;
         if(isNeg&&hExp>0){negKwh+=hExp;negCost+=hExp*Math.abs(spot);}
         imp+=hImp; exp+=hExp;
-        if(o.tariff==='fixed') cost+=hImp*(o.fixedPrice||0.28)-hExp*(o.fixedFeed||0);
+        if(o.tariff==='fixed') cost+=hImp*(o.fixedPrice||0.28)*pr-hExp*(o.fixedFeed||0)*pr;
         else cost+=hImp*(spot+LEVY)-hExp*(spot-FEED_MARGIN);
       }
     }
@@ -392,7 +392,7 @@ function recompute(){
     $('estText').innerHTML='Vink <b>Zonnepanelen</b> aan om een gebalanceerde batterij-maat te berekenen. Zonder PV draait een batterij puur op prijs-arbitrage (zie de terugverdien-regels onderaan).';
     $('estApply').onclick=()=>{};
   }
-  $('tariffNote').textContent=state.tariff==='fixed'?('(vast: €'+b.fixedPrice.toFixed(2).replace('.',',')+'/kWh afname, €'+b.fixedFeed.toFixed(2).replace('.',',')+"/kWh terug — pas aan onder 'Vul je gegevens in')"):'(dyn: spot + €0,135 heffing)';
+  $('tariffNote').textContent=state.tariff==='fixed'?('(vast: €'+(b.fixedPrice*(1+b.priceRise)).toFixed(2).replace('.',',')+'/kWh afname, €'+(b.fixedFeed*(1+b.priceRise)).toFixed(2).replace('.',',')+'/kWh terug'+(b.priceRise>0?' — incl. +'+Math.round(b.priceRise*100)+'%':'')+" — pas aan onder 'Vul je gegevens in')"):'(dyn: spot + €0,135 heffing)';
   $('kwpOut').textContent='= '+b.kwp.toFixed(1).replace('.',',')+' kWp';
   $('npOut').textContent='bruto ≈'+(b.battNet/0.9).toFixed(1)+' kWh';
   $('hpOut').textContent=b.evKm>0?(b.homePct+'%'):'n.v.t.';
