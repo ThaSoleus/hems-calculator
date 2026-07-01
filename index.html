@@ -453,7 +453,7 @@ function recompute(){
     const total=b.inclCar?b.enteredHouse:(b.house+ec.evKwh);
     $('evNote').style.display='';
     $('evNote').innerHTML='<b>Auto thuisladen:</b> ~'+ec.evKwh.toLocaleString('nl-NL')+' kWh/jaar = '+Math.round(100*ec.evKwh/total)+'% van je '+total.toLocaleString('nl-NL')+' kWh. '+
-      (state.tariff==='dyn'?('Slim laden (zon + goedkope uren) laadt ~'+ec.evPvPct+'% op eigen zon en scheelt ~<b>'+eur(ec.slimSave)+'/jaar (~'+ec.pct+'%)</b> t.o.v. ongestuurd op de avondpiek.'):'Bij vast tarief maakt het laadmoment niet uit (één prijs).');
+      (state.tariff==='dyn'?('Slim laden (zon + goedkope uren) laadt ~'+ec.evPvPct+'% op eigen zon en scheelt ~<b>'+eur(ec.slimSave)+'/jaar (~'+ec.pct+'%)</b> t.o.v. ongestuurd op de avondpiek.'):(b.kwp>0&&ec.slimSave>0?('Bij vast tarief is er geen prijsverschil per uur, maar overdag laden gebruikt meer van je eigen zon — dat scheelt ~<b>'+eur(ec.slimSave)+'/jaar</b> aan inkoop.'):'Bij vast tarief maakt het laadmoment niet uit (één prijs).'));
   } else $('evNote').style.display='none';
   if(state.tariff==='dyn'&&(b.battNet>0||b.evKm>0)){
     const sb=slimBreakdown(b);
