@@ -348,10 +348,44 @@ function suggestBalance(b,heatpump){
   return {usable, sc0:at0.selfCons, scK:atK.selfCons, ssK:atK.selfSuff, exp0:at0.exp};
 }
 
+// --- Economie-helpers (puur; door de UI gebruikt én door de tests gedekt) ---
+// Terugverdientijd in jaren; null = verdient niet terug (geen/negatieve besparing).
+function paybackYears(cost, save) {
+  return save > 0 ? Math.round(cost / save) : null;
+}
+
+// Resterende investering na `years` jaar besparing. hasSaving=false -> geen besparing.
+function outstandingEur(cost, save, years) {
+  const remaining = Math.max(0, cost - Math.max(0, save) * years);
+  return { remaining, hasSaving: save > 0 };
+}
+
+// Opsplitsing van de slim-sturen-besparing (dynamisch) in EV- en batterij-deel.
+// total = besparing van alles-slim t.o.v. niets-slim; evPart/batPart isoleren elk kanaal.
+function slimBreakdown(o) {
+  const allSmart = simulate({ ...o, smart: true, evSmart: true });
+  const noSmart = simulate({ ...o, smart: false, evSmart: false });
+  const evPart = o.evKm > 0 ? simulate({ ...o, smart: true, evSmart: false }).cost - allSmart.cost : 0;
+  const batPart = o.battNet > 0 ? simulate({ ...o, smart: false, evSmart: true }).cost - allSmart.cost : 0;
+  return { total: Math.max(0, noSmart.cost - allSmart.cost), evPart, batPart };
+}
+
+// EV-laden: kWh, %-op-eigen-zon, en besparing slim vs ongestuurd (avondpiek).
+function evCharging(o) {
+  const Dsm = simulate({ ...o, smart: true, evSmart: true });
+  const Ddm = simulate({ ...o, smart: true, evSmart: false });
+  const noEV = simulate({ ...o, smart: true, evKm: 0 }).cost;
+  const dumbCharge = Ddm.cost - noEV;
+  const slimSave = Math.max(0, Ddm.cost - Dsm.cost);
+  const pct = dumbCharge > 0 ? Math.round(100 * slimSave / dumbCharge) : 0;
+  return { evKwh: Dsm.evKwh, evPvPct: Dsm.evPvPct, slimSave, pct };
+}
+
 
 /* Node-export voor de test-suite; in de browser (geen module) overgeslagen. */
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { simulate, batArb, suggestBalance, suggestPower,
+    paybackYears, outstandingEur, slimBreakdown, evCharging,
     YIELD, LEVY, FEED_MARGIN, RTE, RESERVE_FRAC, MISMATCH, DIRECT_MM,
     PVM, PVD, LD, SPOT, FLEX, EV_MID, EV_NIGHT, EV_EVE, DAYS };
 }
@@ -415,24 +449,18 @@ function recompute(){
     return `<div class="metric"><div class="lbl">${t}</div><div class="val">${eur(r.cost)}</div>${sv}${ss}${ev}</div>`;
   }).join('');
   if(b.evKm>0){
-    const total=b.inclCar?b.enteredHouse:(b.house+D.evKwh);
-    const Dsm=simulate({...b,smart:true,evSmart:true}), Ddm=simulate({...b,smart:true,evSmart:false});
-    const noEVcost=simulate({...b,smart:true,evKm:0}).cost;
-    const dumbCharge=Ddm.cost-noEVcost, slimSave=Math.max(0,Ddm.cost-Dsm.cost);
-    const pct=dumbCharge>0?Math.round(100*slimSave/dumbCharge):0;
+    const ec=evCharging(b);
+    const total=b.inclCar?b.enteredHouse:(b.house+ec.evKwh);
     $('evNote').style.display='';
-    $('evNote').innerHTML='<b>Auto thuisladen:</b> ~'+Dsm.evKwh.toLocaleString('nl-NL')+' kWh/jaar = '+Math.round(100*Dsm.evKwh/total)+'% van je '+total.toLocaleString('nl-NL')+' kWh. '+
-      (state.tariff==='dyn'?('Slim laden (zon + goedkope uren) laadt ~'+Dsm.evPvPct+'% op eigen zon en scheelt ~<b>'+eur(slimSave)+'/jaar (~'+pct+'%)</b> t.o.v. ongestuurd op de avondpiek.'):'Bij vast tarief maakt het laadmoment niet uit (één prijs).');
+    $('evNote').innerHTML='<b>Auto thuisladen:</b> ~'+ec.evKwh.toLocaleString('nl-NL')+' kWh/jaar = '+Math.round(100*ec.evKwh/total)+'% van je '+total.toLocaleString('nl-NL')+' kWh. '+
+      (state.tariff==='dyn'?('Slim laden (zon + goedkope uren) laadt ~'+ec.evPvPct+'% op eigen zon en scheelt ~<b>'+eur(ec.slimSave)+'/jaar (~'+ec.pct+'%)</b> t.o.v. ongestuurd op de avondpiek.'):'Bij vast tarief maakt het laadmoment niet uit (één prijs).');
   } else $('evNote').style.display='none';
   if(state.tariff==='dyn'&&(b.battNet>0||b.evKm>0)){
-    const allSmart=simulate({...b,smart:true,evSmart:true});
-    const noSmart=simulate({...b,smart:false,evSmart:false});
-    const evPart=b.evKm>0?simulate({...b,smart:true,evSmart:false}).cost-allSmart.cost:0;
-    const batPart=b.battNet>0?simulate({...b,smart:false,evSmart:true}).cost-allSmart.cost:0;
-    const totSlim=Math.max(0,noSmart.cost-allSmart.cost);
+    const sb=slimBreakdown(b);
+    const totSlim=sb.total;
     let parts=[];
-    if(b.evKm>0)parts.push('slim EV-laden '+eur(Math.max(0,evPart)));
-    if(b.battNet>0)parts.push('slim batterij-sturen '+eur(Math.max(0,batPart)));
+    if(b.evKm>0)parts.push('slim EV-laden '+eur(Math.max(0,sb.evPart)));
+    if(b.battNet>0)parts.push('slim batterij-sturen '+eur(Math.max(0,sb.batPart)));
     $('slimNote').style.display='';
     $('slimNote').innerHTML='<b>Slim sturen levert samen ~'+eur(totSlim)+'/jaar op</b> t.o.v. dezelfde panelen/batterij/auto zónder sturing'+(parts.length?' — '+parts.join(' + '):'')+'. (Alleen bij dynamisch tarief; bij vast tarief maakt het sturen niet uit.)';
   } else $('slimNote').style.display='none';
@@ -442,9 +470,9 @@ function recompute(){
   const arb=batArb(b);
   const batOnly=(b.battNet>0&&b.tariff==='dyn')?A.cost-arb.total:null;
   const pvSave=A.cost-B.cost, battSaveWithPv=B.cost-D.cost, battSaveNoPv=batOnly!=null?arb.total:0;
-  const outstanding=(c,s)=>{const r=Math.max(0,c-Math.max(0,s)*years); return s>0?(r<=0?'volledig terugverdiend':eur(r)+' open'):eur(c)+' open (geen besparing)';};
+  const outstanding=(c,s)=>{const o=outstandingEur(c,s,years); return o.hasSaving?(o.remaining<=0?'volledig terugverdiend':eur(o.remaining)+' open'):eur(o.remaining)+' open (geen besparing)';};
   const evDumb=b.evKm>0?simulate({...b,smart:true,evSmart:false}):null;
-  const pb=(c,save)=>save>0?Math.round(c/save)+' jaar':'verdient niet terug';
+  const pb=(c,save)=>{const y=paybackYears(c,save); return y!=null?y+' jaar':'verdient niet terug';};
   const eurKwh=v=>'€'+v.toFixed(2).replace('.',',')+'/kWh';
   const dyn=state.tariff==='dyn', rows=[];
   if(b.kwp>0) rows.push(['PV-eigenverbruik (panelen vs niets)','−'+eur(A.cost-B.cost)+'/jr']);
